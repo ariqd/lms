@@ -9,7 +9,7 @@ A Laravel-based Learning Management System (LMS) designed to facilitate online e
 * **Content Delivery**: Upload and manage course materials, including videos, documents, and quizzes.
 * **Assessment Tools**: Create quizzes and assignments to evaluate student performance.
 * **Progress Tracking**: Monitor student progress and performance metrics.
-* **Responsive Design**: Accessible on various devices, ensuring a seamless learning experience.([github.com][1])
+* **Responsive Design**: Accessible on various devices, ensuring a seamless learning experience.
 
 ## Installation
 
