@@ -19,7 +19,7 @@ A Laravel-based Learning Management System (LMS) designed to facilitate online e
 * Composer
 * Node.js & npm
 * MySQL or any other supported database
-* Laravel 11([github.com][1])
+* Laravel 11 or above
 
 ### Steps
 
