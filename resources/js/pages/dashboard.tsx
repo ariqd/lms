@@ -1,7 +1,8 @@
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { SharedData, type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
+import { useMemo } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -13,14 +14,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Dashboard() {
     const { auth } = usePage<SharedData>().props;
 
+    const descriptionText = useMemo(() => {
+        return auth.user.role?.identity === 'kader' ? 'Perkembangan pelatihan Anda' : 'Ringkasan sistem manajemen pembelajaran'
+    }, [auth]);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Dashboard" />
-            <div className="container mx-auto max-w-7xl space-y-6 p-4">
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Selamat Datang, {auth.user.name}!</h1>
-                    <p className="mt-1 text-gray-600">Perkembangan pelatihan Anda</p>
-                </div>
+            <Head title={`Dashboard ${auth.user.role?.name}`} />
+            <div className="px-4 py-6">
+                <Heading
+                    title={`Selamat Datang, ${auth.user.name}!`}
+                    description={descriptionText}
+                />
             </div>
         </AppLayout>
     );
