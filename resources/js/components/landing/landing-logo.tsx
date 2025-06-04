@@ -1,14 +1,18 @@
 import { BookOpen } from 'lucide-react';
 
-const LandingLogo = () => {
+interface LandingLogoTypes {
+    isScrolled: boolean;
+}
+
+const LandingLogo = ({ isScrolled }: LandingLogoTypes) => {
     return (
         <div className="flex items-center space-x-2">
-            <div className="h-10 w-10 bg-white/10 text-white rounded-full flex items-center justify-center">
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${isScrolled ? 'text-gray-700 bg-gray-700/10' : 'text-white bg-white/10'}`}>
                 <BookOpen size={24} />
             </div>
-            <div className="text-white font-semibold text-lg">
+            <div className={`${isScrolled ? 'text-gray-700' : 'text-white'} font-semibold text-xl`}>
                 <span>MPKSDI</span>
-                <span className="text-white/90 ml-1">PWM</span>
+                <span className="ml-1">PWM</span>
             </div>
         </div>
     );

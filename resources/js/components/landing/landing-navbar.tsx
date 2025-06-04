@@ -1,26 +1,22 @@
 import { useState, useEffect } from 'react';
-// import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, LogIn } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Link } from '@inertiajs/react';
 import LandingLogo from './landing-logo';
-// import Logo from './Logo';
-// import Button from '../ui/Button';
 import {
     NavigationMenu,
     NavigationMenuContent,
-    NavigationMenuIndicator,
     NavigationMenuItem,
     NavigationMenuLink,
     NavigationMenuList,
     NavigationMenuTrigger,
-    NavigationMenuViewport,
+    navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import { cn } from '@/lib/utils';
 
 const LandingNavbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    // const location = useLocation();
 
     const toggleMenu = () => setIsOpen(!isOpen);
     const closeMenu = () => setIsOpen(false);
@@ -75,36 +71,26 @@ const LandingNavbar = () => {
         setOpenDropdown(openDropdown === name ? null : name);
     };
 
-    const handleMouseEnter = (name: string) => {
-        setOpenDropdown(name);
-    };
-
-    const handleMouseLeave = () => {
-        setOpenDropdown(null);
-    };
-
     return (
         <nav
             className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
                 }`}
         >
-            <div className="container mx-auto px-4 md:px-6">
-                <div className="flex justify-between items-center">
+            <div className="container px-4 mx-auto md:px-6">
+                <div className="flex items-center justify-between">
                     <Link href="/" className="flex items-center" onClick={closeMenu}>
-                        <LandingLogo />
+                        <LandingLogo isScrolled={isScrolled} />
                     </Link>
 
                     {/* Desktop Navigation */}
                     <NavigationMenu className="hidden lg:flex" viewport={false}>
                         <NavigationMenuList className='gap-4'>
                             {navLinks.map((link) => (
-                                <NavigationMenuItem key={link.name} className='text-white hover:text-white hover:bg-transparent'>
+                                <NavigationMenuItem key={link.name}>
                                     {link.items ? (
                                         <>
-                                            <NavigationMenuTrigger
-                                                className='bg-transparent hover:bg-transparent'>
+                                            <NavigationMenuTrigger className={`${isScrolled ? 'text-gray-700 hover:text-gray-700' : 'text-white'}`}>
                                                 {link.name}
-                                                {/* <ChevronDown size={16} className="ml-1" /> */}
                                             </NavigationMenuTrigger>
 
                                             <NavigationMenuContent>
@@ -115,7 +101,6 @@ const LandingNavbar = () => {
                                                                 <Link
                                                                     key={item.path}
                                                                     href={item.path}
-                                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600"
                                                                     onClick={() => {
                                                                         setOpenDropdown(null);
                                                                         closeMenu();
@@ -133,6 +118,7 @@ const LandingNavbar = () => {
                                         <NavigationMenuLink asChild>
                                             <Link
                                                 href={link.path}
+                                                className={cn(navigationMenuTriggerStyle(), "group", isScrolled ? 'text-gray-700 hover:text-gray-700' : 'text-white')}
                                             >
                                                 {link.name}
                                             </Link>
@@ -143,21 +129,21 @@ const LandingNavbar = () => {
                         </NavigationMenuList>
                     </NavigationMenu>
 
-                    <div className="hidden lg:flex items-center">
+                    <div className="items-center hidden lg:flex">
                         <Button
                             variant={isScrolled ? "default" : "secondary"}
-                            className="flex items-center bg-green-700 text-white hover:bg-green-900"
+                            className="flex items-center text-white bg-green-700 hover:bg-green-900"
                             asChild
                         >
-                            <a href="/login">
+                            <Link href="/login">
                                 <LogIn size={18} className="mr-2" />
                                 Masuk
-                            </a>
+                            </Link>
                         </Button>
                     </div>
 
                     {/* Mobile menu button */}
-                    <div className="lg:hidden flex items-center">
+                    <div className="flex items-center lg:hidden">
                         <button
                             onClick={toggleMenu}
                             className={`inline-flex items-center justify-center p-2 rounded-md ${isScrolled ? 'text-gray-700 hover:text-primary-500' : 'text-white hover:text-white/80'
@@ -168,9 +154,9 @@ const LandingNavbar = () => {
                                 {isOpen ? 'Tutup menu utama' : 'Buka menu utama'}
                             </span>
                             {isOpen ? (
-                                <X className="block h-6 w-6" aria-hidden="true" />
+                                <X className="block w-6 h-6" aria-hidden="true" />
                             ) : (
-                                <Menu className="block h-6 w-6" aria-hidden="true" />
+                                <Menu className="block w-6 h-6" aria-hidden="true" />
                             )}
                         </button>
                     </div>
@@ -189,7 +175,7 @@ const LandingNavbar = () => {
                                 <>
                                     <button
                                         onClick={() => handleDropdownClick(link.name)}
-                                        className="w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-500"
+                                        className="flex items-center justify-between w-full px-3 py-2 text-base font-medium text-gray-700 rounded-md hover:bg-gray-50 hover:text-primary-500"
                                     >
                                         {link.name}
                                         <ChevronDown
@@ -204,7 +190,7 @@ const LandingNavbar = () => {
                                                 <Link
                                                     key={item.path}
                                                     href={item.path}
-                                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-500"
+                                                    className="block px-3 py-2 text-base font-medium text-gray-700 rounded-md hover:bg-gray-50 hover:text-primary-500"
                                                     onClick={closeMenu}
                                                 >
                                                     {item.name}
@@ -228,14 +214,14 @@ const LandingNavbar = () => {
                         </div>
                     ))}
                     <div className="pt-4 pb-2 border-t border-gray-200">
-                        <a
+                        <Link
                             href="/login"
-                            className="flex items-center px-3 py-2 rounded-md text-base font-medium text-white bg-primary-500 hover:bg-primary-600"
+                            className="flex items-center px-3 py-2 text-base font-medium text-white bg-green-700 rounded-md hover:bg-green-800"
                             onClick={closeMenu}
                         >
                             <LogIn size={18} className="mr-2" />
                             Masuk
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
