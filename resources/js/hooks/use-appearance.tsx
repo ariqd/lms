@@ -1,73 +1,102 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
-export type Appearance = 'light' | 'dark' | 'system';
+export type Appearance = 'light'; // Only 'light' is now a valid appearance
 
-const prefersDark = () => {
-    if (typeof window === 'undefined') {
-        return false;
-    }
+// const prefersDark = () => {
+//     if (typeof window === 'undefined') {
+//         return false;
+//     }
+//
+//     return window.matchMedia('(prefers-color-scheme: dark)').matches;
+// };
 
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+// const setCookie = (name: string, value: string, days = 365) => {
+//     if (typeof document === 'undefined') {
+//         return;
+//     }
+//
+//     const maxAge = days * 24 * 60 * 60;
+//     document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
+// };
+
+const applyTheme = () => { // Removed unused _appearance parameter
+    // const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark());
+    // document.documentElement.classList.toggle('dark', isDark);
+    // Always apply light mode
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
 };
 
-const setCookie = (name: string, value: string, days = 365) => {
-    if (typeof document === 'undefined') {
-        return;
-    }
+// const mediaQuery = () => {
+//     if (typeof window === 'undefined') {
+//         return null;
+//     }
+//
+//     return window.matchMedia('(prefers-color-scheme: dark)');
+// };
 
-    const maxAge = days * 24 * 60 * 60;
-    document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
-};
-
-const applyTheme = (appearance: Appearance) => {
-    const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark());
-
-    document.documentElement.classList.toggle('dark', isDark);
-};
-
-const mediaQuery = () => {
-    if (typeof window === 'undefined') {
-        return null;
-    }
-
-    return window.matchMedia('(prefers-color-scheme: dark)');
-};
-
-const handleSystemThemeChange = () => {
-    const currentAppearance = localStorage.getItem('appearance') as Appearance;
-    applyTheme(currentAppearance || 'system');
-};
+// const handleSystemThemeChange = () => {
+//     const currentAppearance = localStorage.getItem('appearance') as Appearance;
+//     applyTheme(currentAppearance || 'system');
+// };
 
 export function initializeTheme() {
-    const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
+    // const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
+    // applyTheme(savedAppearance);
+    applyTheme(); // Always initialize with light theme
 
-    applyTheme(savedAppearance);
-
-    // Add the event listener for system theme changes...
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+    // Remove system theme change listener as it's no longer needed
+    // mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+    if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('appearance', 'light');
+    }
+    if (typeof document !== 'undefined') {
+        const days = 365;
+        const maxAge = days * 24 * 60 * 60;
+        document.cookie = `appearance=light;path=/;max-age=${maxAge};SameSite=Lax`;
+    }
 }
 
 export function useAppearance() {
-    const [appearance, setAppearance] = useState<Appearance>('system');
+    // const [appearance, setAppearance] = useState<Appearance>('system');
+    const appearance: Appearance = 'light'; // Always light
 
-    const updateAppearance = useCallback((mode: Appearance) => {
-        setAppearance(mode);
+    // const updateAppearance = useCallback((mode: Appearance) => {
+    //     setAppearance(mode);
+    //
+    //     // Store in localStorage for client-side persistence...
+    //     localStorage.setItem('appearance', mode);
+    //
+    //     // Store in cookie for SSR...
+    //     setCookie('appearance', mode);
+    //
+    //     applyTheme(mode);
+    // }, []);
 
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', mode);
-
-        // Store in cookie for SSR...
-        setCookie('appearance', mode);
-
-        applyTheme(mode);
+    const updateAppearance = useCallback(() => { // Removed unused _mode parameter
+        // No-op, theme is fixed to light
+        applyTheme();
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('appearance', 'light');
+        }
+        if (typeof document !== 'undefined') {
+            const days = 365;
+            const maxAge = days * 24 * 60 * 60;
+            document.cookie = `appearance=light;path=/;max-age=${maxAge};SameSite=Lax`;
+        }
     }, []);
 
-    useEffect(() => {
-        const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
-        updateAppearance(savedAppearance || 'system');
 
-        return () => mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
-    }, [updateAppearance]);
+    useEffect(() => {
+        // const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
+        // updateAppearance(savedAppearance || 'system');
+        applyTheme();
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('appearance', 'light');
+        }
+        // No need to listen for system theme changes
+        // return () => mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
+    }, []);
 
     return { appearance, updateAppearance } as const;
 }

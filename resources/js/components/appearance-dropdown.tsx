@@ -1,32 +1,25 @@
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useAppearance } from '@/hooks/use-appearance';
-import { Monitor, Moon, Sun } from 'lucide-react';
+// import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+// import { useAppearance } from '@/hooks/use-appearance'; // No longer needed as theme is fixed
+import { Sun } from 'lucide-react'; // Only Sun icon is needed
 import { HTMLAttributes } from 'react';
 
 export default function AppearanceToggleDropdown({ className = '', ...props }: HTMLAttributes<HTMLDivElement>) {
-    const { appearance, updateAppearance } = useAppearance();
+    // const { appearance, updateAppearance } = useAppearance(); // Theme is fixed
 
-    const getCurrentIcon = () => {
-        switch (appearance) {
-            case 'dark':
-                return <Moon className="h-5 w-5" />;
-            case 'light':
-                return <Sun className="h-5 w-5" />;
-            default:
-                return <Monitor className="h-5 w-5" />;
-        }
-    };
+    // const getCurrentIcon = () => { // Always light mode
+    //     return <Sun className="h-5 w-5" />;
+    // };
 
     return (
         <div className={className} {...props}>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-md">
-                        {getCurrentIcon()}
-                        <span className="sr-only">Toggle theme</span>
-                    </Button>
-                </DropdownMenuTrigger>
+            {/* <DropdownMenu>
+                <DropdownMenuTrigger asChild> */}
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-md" disabled> {/* Disabled as there's no action */}
+                <Sun className="h-5 w-5" />
+                <span className="sr-only">Theme (Light Mode)</span>
+            </Button>
+            {/* </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => updateAppearance('light')}>
                         <span className="flex items-center gap-2">
@@ -47,7 +40,7 @@ export default function AppearanceToggleDropdown({ className = '', ...props }: H
                         </span>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
         </div>
     );
 }
