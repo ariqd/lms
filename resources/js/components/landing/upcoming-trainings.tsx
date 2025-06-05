@@ -1,0 +1,178 @@
+import { useState } from 'react';
+import { Calendar, MapPin, Clock, Users } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Link } from '@inertiajs/react';
+
+const trainings = [
+    {
+        id: 1,
+        title: 'Baitul Arqam Tingkat Dasar',
+        date: '20-22 Agustus 2025',
+        location: 'Gedung Dakwah Muhammadiyah, Yogyakarta',
+        time: '08.00 - 16.00 WIB',
+        capacity: 50,
+        registration_deadline: '10 Agustus 2025',
+        type: 'Baitul Arqam',
+    },
+    {
+        id: 2,
+        title: 'Darul Arqam Tingkat Madya',
+        date: '15-18 September 2025',
+        location: 'Universitas Muhammadiyah Yogyakarta',
+        time: '08.00 - 16.00 WIB',
+        capacity: 40,
+        registration_deadline: '1 September 2025',
+        type: 'Darul Arqam',
+    },
+    {
+        id: 3,
+        title: 'Baitul Arqam Pimpinan Cabang',
+        date: '5-7 Oktober 2025',
+        location: 'Pondok Pesantren Muhammadiyah, Sleman',
+        time: '08.00 - 16.00 WIB',
+        capacity: 60,
+        registration_deadline: '20 September 2025',
+        type: 'Baitul Arqam',
+    },
+    {
+        id: 4,
+        title: 'Pelatihan Mubaligh Muhammadiyah',
+        date: '12-14 November 2025',
+        location: 'Masjid Syuhada, Yogyakarta',
+        time: '08.00 - 16.00 WIB',
+        capacity: 30,
+        registration_deadline: '30 Oktober 2025',
+        type: 'Pelatihan Khusus',
+    },
+    {
+        id: 5,
+        title: 'Baitul Arqam Amal Usaha Muhammadiyah',
+        date: '8-10 Desember 2025',
+        location: 'Hotel Saphir Yogyakarta',
+        time: '08.00 - 16.00 WIB',
+        capacity: 45,
+        registration_deadline: '25 November 2025',
+        type: 'Baitul Arqam',
+    },
+    {
+        id: 6,
+        title: 'Darul Arqam Tingkat Dasar',
+        date: '20-24 Januari 2026',
+        location: 'Gedung Dakwah Muhammadiyah, Yogyakarta',
+        time: '08.00 - 16.00 WIB',
+        capacity: 35,
+        registration_deadline: '5 Januari 2026',
+        type: 'Darul Arqam',
+    },
+];
+
+const UpcomingTrainings = () => {
+    const [filter, setFilter] = useState('all');
+
+    const filteredTrainings = filter === 'all'
+        ? trainings
+        : trainings.filter(training => training.type === filter);
+
+    return (
+        <section className="py-16 bg-white">
+            <div className="container px-4 mx-auto md:px-6">
+                <div className="max-w-3xl mx-auto mb-12 text-center">
+                    <h2 className="mb-4 text-3xl font-bold text-gray-900">Jadwal Pelatihan Mendatang</h2>
+                    <p className="text-lg text-gray-600">
+                        Berikut adalah jadwal pelatihan yang akan diselenggarakan oleh MPKSDI PWM dalam waktu dekat.
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-2 mb-8">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'all'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Semua
+                    </button>
+                    <button
+                        onClick={() => setFilter('Baitul Arqam')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'Baitul Arqam'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Baitul Arqam
+                    </button>
+                    <button
+                        onClick={() => setFilter('Darul Arqam')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'Darul Arqam'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Darul Arqam
+                    </button>
+                    <button
+                        onClick={() => setFilter('Pelatihan Khusus')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'Pelatihan Khusus'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Pelatihan Khusus
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredTrainings.map((training) => (
+                        <div key={training.id} className="overflow-hidden transition-shadow bg-white border border-gray-200 rounded-xl shadow-soft hover:shadow-medium">
+                            <div className="p-6">
+                                <div className="inline-block px-3 py-1 mb-4 text-xs font-medium rounded-full text-primary-700 bg-primary-50">
+                                    {training.type}
+                                </div>
+                                <h3 className="mb-3 text-xl font-semibold text-gray-900">
+                                    {training.title}
+                                </h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-center text-gray-600">
+                                        <Calendar size={18} className="mr-2 text-primary-600" />
+                                        <span>{training.date}</span>
+                                    </div>
+                                    <div className="flex items-center text-gray-600">
+                                        <MapPin size={18} className="mr-2 text-primary-600" />
+                                        <span>{training.location}</span>
+                                    </div>
+                                    <div className="flex items-center text-gray-600">
+                                        <Clock size={18} className="mr-2 text-primary-600" />
+                                        <span>{training.time}</span>
+                                    </div>
+                                    <div className="flex items-center text-gray-600">
+                                        <Users size={18} className="mr-2 text-primary-600" />
+                                        <span>Kapasitas: {training.capacity} peserta</span>
+                                    </div>
+                                </div>
+                                <div className="pt-4 mt-4 border-t border-gray-200">
+                                    <p className="mb-4 text-sm text-gray-500">
+                                        Batas pendaftaran: <span className="font-semibold">{training.registration_deadline}</span>
+                                    </p>
+                                    <Button variant="outline">
+                                        Detail Pelatihan
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="mt-10 text-center">
+                    <Button asChild>
+                        <Link href="/schedule">
+                            Lihat Semua Jadwal Pelatihan
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+export default UpcomingTrainings;
