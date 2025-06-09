@@ -72,10 +72,7 @@ const LandingNavbar = () => {
     };
 
     return (
-        <nav
-            className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
-                }`}
-        >
+        <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'}`}>
             <div className="container px-4 mx-auto md:px-6">
                 <div className="flex items-center justify-between">
                     <Link href="/" className="flex items-center" onClick={closeMenu}>
@@ -84,7 +81,7 @@ const LandingNavbar = () => {
 
                     {/* Desktop Navigation */}
                     <NavigationMenu className="hidden lg:flex" viewport={false}>
-                        <NavigationMenuList className='gap-4'>
+                        <NavigationMenuList className='space-x-2'>
                             {navLinks.map((link) => (
                                 <NavigationMenuItem key={link.name}>
                                     {link.items ? (

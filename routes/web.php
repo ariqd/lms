@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -14,33 +15,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ADMIN ROUTES
 
-    Route::get('classes', function () {
-        return Inertia::render('blank', ['title' => 'Program & Kelas']);
-    })->name('classes');
+    Route::middleware('role:admin')->group(function () {
+        Route::get('classes', function () {
+            return Inertia::render('blank', ['title' => 'Program & Kelas']);
+        })->name('classes');
 
-    Route::get('users', function () {
-        return Inertia::render('blank', ['title' => 'Pengguna']);
-    })->name('users');
+        Route::get('users', function () {
+            return Inertia::render('blank', ['title' => 'Pengguna']);
+        })->name('users');
 
-    Route::get('organizations', function () {
-        return Inertia::render('blank', ['title' => 'Organisasi']);
-    })->name('organizations');
+        Route::get('organizations', function () {
+            return Inertia::render('blank', ['title' => 'Organisasi']);
+        })->name('organizations');
 
-    Route::get('materials', function () {
-        return Inertia::render('blank', ['title' => 'Materi & Tugas']);
-    })->name('materials');
+        Route::get('materials', function () {
+            return Inertia::render('blank', ['title' => 'Materi & Tugas']);
+        })->name('materials');
 
-    Route::get('monitoring', function () {
-        return Inertia::render('blank', ['title' => 'Monitoring']);
-    })->name('monitoring');
+        Route::get('monitoring', function () {
+            return Inertia::render('blank', ['title' => 'Monitoring']);
+        })->name('monitoring');
 
-    Route::get('certificates', function () {
-        return Inertia::render('blank', ['title' => 'Sertifikat']);
-    })->name('certificates');
+        Route::get('certificates', function () {
+            return Inertia::render('blank', ['title' => 'Sertifikat']);
+        })->name('certificates');
 
-    Route::get('reports', function () {
-        return Inertia::render('blank', ['title' => 'Laporan']);
-    })->name('reports');
+        Route::get('reports', function () {
+            return Inertia::render('blank', ['title' => 'Laporan']);
+        })->name('reports');
+    });
 
     // KADER ROUTES
 
