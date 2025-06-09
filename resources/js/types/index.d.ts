@@ -39,5 +39,15 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    role_id: number; // Assuming role_id is still present
+    role: Role | null; // Role can be an object or null if not set/loaded
     [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface Role {
+    id: number;
+    name: string;
+    identity: string;
+    created_at?: string;
+    updated_at?: string;
 }
