@@ -47,21 +47,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // KADER ROUTES
 
-    Route::get('schedule', function () {
-        return Inertia::render('blank', ['title' => 'Jadwal & Kehadiran']);
-    })->name('schedule');
+    Route::middleware('role:kader')->group(function () {
+        Route::get('schedule', function () {
+            return Inertia::render('blank', ['title' => 'Jadwal & Kehadiran']);
+        })->name('schedule');
 
-    Route::get('materials', function () {
-        return Inertia::render('blank', ['title' => 'Materi & Kelas']);
-    })->name('materials');
+        Route::get('materials', function () {
+            return Inertia::render('blank', ['title' => 'Materi & Kelas']);
+        })->name('materials');
 
-    Route::get('progress', function () {
-        return Inertia::render('blank', ['title' => 'Progress Belajar']);
-    })->name('progress');
+        Route::get('progress', function () {
+            return Inertia::render('blank', ['title' => 'Progress Belajar']);
+        })->name('progress');
 
-    Route::get('my-certificates', function () {
-        return Inertia::render('blank', ['title' => 'Sertifikat Saya']);
-    })->name('my-certificates');
+        Route::get('my-certificates', function () {
+            return Inertia::render('blank', ['title' => 'Sertifikat Saya']);
+        })->name('my-certificates');
+    });
 });
 
 require __DIR__ . '/settings.php';
