@@ -30,6 +30,7 @@ export interface SharedData {
     sidebarOpen: boolean;
     flash?: {
         success?: string;
+        danger?: string;
     };
     [key: string]: unknown;
 }

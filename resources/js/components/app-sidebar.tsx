@@ -19,21 +19,6 @@ const mainNavItems: NavItem[] = [
         icon: Layers,
     },
     {
-        title: 'Pengguna',
-        href: '/users',
-        icon: Users,
-    },
-    {
-        title: 'Lembaga',
-        href: '/institutions',
-        icon: Building2,
-    },
-    {
-        title: 'Role',
-        href: '/roles',
-        icon: Building2,
-    },
-    {
         title: 'Materi & Tugas',
         href: '/materials',
         icon: BookOpen,
@@ -52,6 +37,24 @@ const mainNavItems: NavItem[] = [
         title: 'Laporan',
         href: '/reports',
         icon: FileText,
+    },
+];
+
+const userNavItems: NavItem[] = [
+    {
+        title: 'Kader',
+        href: '/users',
+        icon: Users,
+    },
+    {
+        title: 'Lembaga',
+        href: '/institutions',
+        icon: Building2,
+    },
+    {
+        title: 'Role',
+        href: '/roles',
+        icon: Building2,
     },
 ];
 
@@ -106,6 +109,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={navigationItems} />
+                {!isKader && <NavMain items={userNavItems} label="Pengguna" />}
             </SidebarContent>
 
             <SidebarFooter>
