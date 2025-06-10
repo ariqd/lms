@@ -24,8 +24,8 @@ const mainNavItems: NavItem[] = [
         icon: Users,
     },
     {
-        title: 'Organisasi',
-        href: '/organizations',
+        title: 'Lembaga',
+        href: '/institutions',
         icon: Building2,
     },
     {

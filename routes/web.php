@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,9 +22,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return Inertia::render('blank', ['title' => 'Program & Kelas']);
         })->name('classes');
 
-        Route::get('users', function () {
-            return Inertia::render('blank', ['title' => 'Pengguna']);
-        })->name('users');
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+
+        Route::get('institutions', [InstitutionController::class, 'index'])->name('institutions.index');
 
         Route::get('organizations', function () {
             return Inertia::render('blank', ['title' => 'Organisasi']);
