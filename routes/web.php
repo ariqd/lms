@@ -28,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('institutions', [InstitutionController::class, 'index'])->name('institutions.index');
 
         Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
 
         Route::get('organizations', function () {
             return Inertia::render('blank', ['title' => 'Organisasi']);
