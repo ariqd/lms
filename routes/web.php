@@ -26,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('users', [UserController::class, 'index'])->name('users.index');
 
         Route::get('institutions', [InstitutionController::class, 'index'])->name('institutions.index');
+        Route::post('institutions', [InstitutionController::class, 'store'])->name('institutions.store');
 
         Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
         Route::post('roles', [RoleController::class, 'store'])->name('roles.store');

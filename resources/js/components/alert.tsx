@@ -19,9 +19,9 @@ const AlertComponent = () => {
     }, [flash?.success]);
 
     return showAlert && flash?.success && (
-        <div className="mt-4 bg-green-700 rounded-md">
-            <Alert>
-                <CheckCircle className="h-4 w-4 text-white" />
+        <div className="mt-4 rounded-md">
+            <Alert className='bg-green-700'>
+                <CheckCircle className="h-4 w-4" color='white' />
                 <AlertDescription className="text-white">
                     {flash?.success}
                 </AlertDescription>

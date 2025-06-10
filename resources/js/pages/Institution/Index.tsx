@@ -4,6 +4,7 @@ import { User, type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AlertComponent from '@/components/alert';
+import InstitutionCreate from './Create';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,7 +26,7 @@ export default function InstitutionIndex({ title, institutions }: PageProps) {
             <div className="px-4 py-6">
                 <div className="flex items-center justify-between">
                     <Heading title={title} />
-                    {/* <RoleCreate /> */}
+                    <InstitutionCreate />
                 </div>
 
                 <AlertComponent />
@@ -35,6 +36,7 @@ export default function InstitutionIndex({ title, institutions }: PageProps) {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead>No</TableHead>
                                     <TableHead>ID</TableHead>
                                     <TableHead>Nama</TableHead>
                                     <TableHead>Email</TableHead>
@@ -43,8 +45,11 @@ export default function InstitutionIndex({ title, institutions }: PageProps) {
                             </TableHeader>
                             <TableBody>
                                 {institutions.length > 0 ? (
-                                    institutions.map((institution) => (
+                                    institutions.map((institution, index) => (
                                         <TableRow key={institution.id}>
+                                            <TableCell className="font-medium">
+                                                {index + 1}
+                                            </TableCell>
                                             <TableCell className="font-medium">
                                                 {institution.id}
                                             </TableCell>

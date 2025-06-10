@@ -89,9 +89,9 @@ const kaderNavItems: NavItem[] = [
 export function AppSidebar() {
     const { auth } = usePage<SharedData>().props;
 
-    const isKader = useMemo(() => auth.user.role?.identity === 'kader', [auth]);
+    const isAdmin = useMemo(() => auth.user.role?.identity === 'admin' || auth.user.role?.identity === 'superadmin', [auth]);
 
-    const navigationItems = useMemo(() => isKader ? kaderNavItems : mainNavItems, [isKader]);
+    const navigationItems = useMemo(() => isAdmin ? mainNavItems : kaderNavItems, [isAdmin]);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -109,7 +109,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={navigationItems} />
-                {!isKader && <NavMain items={userNavItems} label="Pengguna" />}
+                {isAdmin && <NavMain items={userNavItems} label="Pengguna" />}
             </SidebarContent>
 
             <SidebarFooter>
