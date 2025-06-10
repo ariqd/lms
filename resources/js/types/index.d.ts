@@ -57,7 +57,8 @@ export interface Role {
 }
 
 export interface Activity {
-    id: number;
+    id?: number;
+    type: 'ba' | 'da' | '';
     name: string;
     description: string;
     goals: string;
