@@ -2,9 +2,10 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { User, type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AlertComponent from '@/components/alert';
 import InstitutionCreate from './Create';
+import { DataTable, DataTableColumnHeader } from '@/components/data-table';
+import { ColumnDef } from '@tanstack/react-table';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -19,6 +20,54 @@ interface PageProps {
 }
 
 export default function InstitutionIndex({ title, institutions }: PageProps) {
+    const columns: ColumnDef<User>[] = [
+        {
+            id: "no",
+            header: "No",
+            cell: ({ row }) => {
+                return <div className="font-medium">{row.index + 1}</div>;
+            },
+        },
+        {
+            accessorKey: "id",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} title="ID" />
+            ),
+            cell: ({ row }) => <div className="font-medium">{row.getValue("id")}</div>,
+        },
+        {
+            accessorKey: "name",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} title="Nama" />
+            ),
+            cell: ({ row }) => <div>{row.getValue("name")}</div>,
+        },
+        {
+            accessorKey: "email",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} title="Email" />
+            ),
+            cell: ({ row }) => <div>{row.getValue("email")}</div>,
+        },
+        {
+            accessorKey: "created_at",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} title="Tanggal Dibuat" />
+            ),
+            cell: ({ row }) => {
+                const date = row.getValue("created_at") as string;
+                return (
+                    <div>
+                        {date ? new Date(date).toLocaleDateString('id-ID', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }) : '-'}
+                    </div>
+                );
+            },
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -31,54 +80,12 @@ export default function InstitutionIndex({ title, institutions }: PageProps) {
 
                 <AlertComponent />
 
-                <div className="mt-6">
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>No</TableHead>
-                                    <TableHead>ID</TableHead>
-                                    <TableHead>Nama</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Tanggal Dibuat</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {institutions.length > 0 ? (
-                                    institutions.map((institution, index) => (
-                                        <TableRow key={institution.id}>
-                                            <TableCell className="font-medium">
-                                                {index + 1}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {institution.id}
-                                            </TableCell>
-                                            <TableCell>
-                                                {institution.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {institution.email}
-                                            </TableCell>
-                                            <TableCell>
-                                                {institution.created_at ? new Date(institution.created_at).toLocaleDateString('id-ID', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric'
-                                                }) : '-'}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="h-24 text-center text-gray-700">
-                                            Lembaga tidak ditemukan.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </div>
+                <DataTable
+                    columns={columns}
+                    data={institutions}
+                    searchKey="name"
+                    searchPlaceholder="Cari lembaga..."
+                />
             </div>
         </AppLayout>
     );
