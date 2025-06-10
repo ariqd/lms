@@ -3,9 +3,9 @@ import AppLayout from '@/layouts/app-layout';
 import { User, type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import AlertComponent from '@/components/alert';
-import InstitutionCreate from './Create';
 import { DataTable, DataTableColumnHeader } from '@/components/data-table';
 import { ColumnDef } from '@tanstack/react-table';
+import InstitutionCreate from './create';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

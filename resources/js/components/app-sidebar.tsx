@@ -99,7 +99,7 @@ const lembagaNavItems: NavItem[] = [
     },
     {
         title: 'Pengajuan BA / DA',
-        href: '/profile',
+        href: '/activities',
         icon: File,
     },
     {

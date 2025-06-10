@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/input-error';
 import { useForm } from '@inertiajs/react';
-import { useState, FormEventHandler } from 'react';
+import { useState, FormEventHandler, memo } from 'react';
 
 type InstitutionForm = {
     name: string;
@@ -133,4 +133,4 @@ const InstitutionCreate = () => {
     )
 }
 
-export default InstitutionCreate
+export default memo(InstitutionCreate)

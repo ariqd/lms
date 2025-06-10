@@ -55,3 +55,23 @@ export interface Role {
     created_at?: string;
     updated_at?: string;
 }
+
+export interface Activity {
+    id: number;
+    name: string;
+    description: string;
+    goals: string;
+    start_date: string;
+    end_date: string;
+    participant_count: number;
+    location: string;
+    total_budget: number;
+    daily_schedule: string;
+    additional_needs: string;
+    additional_equipments: string;
+    contact_name: string;
+    contact_phone: string;
+    contact_email: string;
+    notes: string;
+    is_approved: boolean;
+}

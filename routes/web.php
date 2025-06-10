@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -70,6 +71,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('my-certificates', function () {
             return Inertia::render('blank', ['title' => 'Sertifikat Saya']);
         })->name('my-certificates');
+    });
+
+    Route::middleware('role:lembaga')->group(function () {
+        Route::resource('activities', ActivityController::class)->names('lembaga.pelatihan');
     });
 });
 

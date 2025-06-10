@@ -22,7 +22,7 @@ class InstitutionController extends Controller
             $query->where('identity', 'lembaga');
         })->with('role')->get();
 
-        return Inertia::render('Institution/Index', [
+        return Inertia::render('admin/institution/index', [
             'title' => 'List Lembaga',
             'institutions' => $institutions,
         ]);
