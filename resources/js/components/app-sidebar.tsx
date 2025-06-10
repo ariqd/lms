@@ -29,6 +29,11 @@ const mainNavItems: NavItem[] = [
         icon: Building2,
     },
     {
+        title: 'Role',
+        href: '/roles',
+        icon: Building2,
+    },
+    {
         title: 'Materi & Tugas',
         href: '/materials',
         icon: BookOpen,

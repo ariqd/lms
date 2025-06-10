@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('users', [UserController::class, 'index'])->name('users.index');
 
         Route::get('institutions', [InstitutionController::class, 'index'])->name('institutions.index');
+
+        Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
 
         Route::get('organizations', function () {
             return Inertia::render('blank', ['title' => 'Organisasi']);

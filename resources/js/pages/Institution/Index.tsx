@@ -14,7 +14,7 @@ interface PageProps {
     title: string;
 }
 
-export default function UsersIndex({ title }: PageProps) {
+export default function InstitutionIndex({ title }: PageProps) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
