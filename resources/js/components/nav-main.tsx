@@ -6,11 +6,11 @@ export function NavMain({ items = [], label }: { items: NavItem[], label?: strin
     const { url } = usePage();
     return (
         <SidebarGroup className="px-2 py-0">
-            {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+            {label && <SidebarGroupLabel className='mt-4 mb-2'>{label}</SidebarGroupLabel>}
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
+                        <SidebarMenuButton size="lg"
                             asChild isActive={item.href === url}
                             tooltip={{ children: item.title }}
                         >
