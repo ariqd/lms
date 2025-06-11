@@ -17,4 +17,12 @@ class ActivityList extends Controller
             'title' => 'Daftar Pelatihan BA / DA'
         ]);
     }
+    public function show($id)
+    {
+        $activity = Activity::find($id);
+
+        return Inertia::render('kader/activity/show', [
+            'activity' => $activity,
+        ]);
+    }
 }

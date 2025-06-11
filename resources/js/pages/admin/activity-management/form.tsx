@@ -2,14 +2,14 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
 import { Activity, BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler, memo } from 'react';
+import { FormEventHandler, memo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
-import { Check, LoaderCircle } from 'lucide-react';
+import { Check, LoaderCircle, NotebookPen } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
 import {
     AlertDialog,
@@ -23,6 +23,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
@@ -49,6 +50,14 @@ type ActivityForm = {
 };
 
 const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: BreadcrumbItem[], activity: Activity }) => {
+    const [checkboxes, setCheckboxes] = useState({
+        dataPelatihan: false,
+        dataDokumen: false,
+        dokumenPembayaran: false,
+    });
+
+    const allCheckboxesChecked = checkboxes.dataPelatihan && checkboxes.dataDokumen && checkboxes.dokumenPembayaran;
+
     const { data, setData, processing, errors, put } = useForm<ActivityForm>({
         type: activity.type ?? '',
         name: activity.name ?? '',
@@ -466,6 +475,78 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                         </div>
                     </div>
 
+                    {/* Invoice */}
+                    <div className="bg-white rounded-lg border p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 bg-indigo-100 rounded flex items-center justify-center">
+                                <span className="text-indigo-600 text-sm font-medium">🧾</span>
+                            </div>
+                            <h3 className="text-lg font-semibold">Invoice</h3>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <div className="grid grid-cols-12 gap-2">
+                                <Input
+                                    type="text"
+                                    placeholder="Masukkan nama invoice"
+                                    disabled={processing}
+                                    className='col-span-5'
+                                />
+                                <Input
+                                    type="file"
+                                    accept=".pdf,.png,.jpg,.jpeg"
+                                    disabled={processing}
+                                    className='cursor-pointer col-span-5'
+                                />
+                                <Button
+                                    type="button"
+                                    variant="default"
+                                    disabled={processing}
+                                    className='bg-blue-600 hover:bg-blue-700 col-span-2'
+                                >
+                                    Upload Invoice
+                                </Button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Supports: PDF, PNG, JPG, JPEG (Max: 10MB)
+                            </p>
+                        </div>
+
+                        <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div>
+                                        <p className="font-medium text-gray-900">Nama Invoice</p>
+                                        <p className="text-sm text-gray-500">invoice.pdf • 100 KB</p>
+                                    </div>
+                                </div>
+                                {/* <Badge variant="outline">Uploaded</Badge> */}
+                                <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
+                                    Download Invoice
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div className='space-y-1'>
+                                        <p className="font-medium text-gray-900">Bukti Pembayaran</p>
+                                        <p className="text-sm text-gray-500">bukti-pembayaran.pdf • 100 KB</p>
+                                        <p className="text-xs text-gray-500 mt-4">
+                                            <div className="font-medium text-gray-900">Catatan:</div>
+                                            <div className="text-gray-500">Bukti pembayaran kegiatan</div>
+                                        </p>
+                                    </div>
+                                </div>
+                                {/* <Badge variant="outline">Uploaded</Badge> */}
+                                <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
+                                    Download Bukti Pembayaran
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Submit Buttons */}
                     <div className="flex justify-between gap-3 pt-6 border-t">
                         <Button type="button" variant="outline" disabled>
@@ -475,6 +556,121 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             <Badge variant={activity.is_approved ? 'default' : 'destructive'}>
                                 {activity.is_approved ? 'Disetujui' : 'Belum Disetujui'}
                             </Badge>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="default">
+                                        {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                        <NotebookPen className="w-4 h-4 mr-2" />
+                                        Catatan Pengajuan
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Catatan Pengajuan</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Kirim catatan pengajuan kegiatan kepada Lembaga Pelatihan
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <div className="space-y-4 py-4">
+                                        <Textarea
+                                            placeholder="Masukkan catatan pengajuan"
+                                            className="min-h-[100px] resize-none"
+                                            disabled={processing}
+                                        />
+                                        <InputError message={errors.notes} />
+                                    </div>
+                                    {/* Riwayat Catatan */}
+                                    <div className="space-y-4 h-40 overflow-y-auto">
+                                        <div className="text-sm font-medium">
+                                            Riwayat Catatan:
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium text-gray-900">Admin</span>
+                                            <span className="text-gray-500"> - 11/06/2025 10:00</span>
+                                            <p className="text-gray-500">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Tutup</AlertDialogCancel>
+                                        <AlertDialogAction asChild>
+                                            <Button
+                                                type="button"
+                                                disabled={processing || !data.notes}
+                                                className="bg-green-700 hover:bg-green-800 text-white disabled:opacity-50"
+                                            >
+                                                {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                                <Check className="w-4 h-4 mr-2" />
+                                                Kirim Catatan
+                                            </Button>
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                             {
                                 !activity.is_approved && (
                                     <AlertDialog>
@@ -487,15 +683,52 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
-                                                <AlertDialogTitle>Apakah Anda yakin ingin menyetujui kegiatan ini?</AlertDialogTitle>
+                                                <AlertDialogTitle>Verifikasi Kelengkapan Dokumen</AlertDialogTitle>
                                                 <AlertDialogDescription>
-                                                    Setujui kegiatan ini untuk melanjutkan proses verifikasi.
+                                                    Pastikan semua dokumen telah diperiksa dan lengkap sebelum menyetujui kegiatan ini.
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
+                                            <div className="space-y-4 py-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id="dataPelatihan"
+                                                        checked={checkboxes.dataPelatihan}
+                                                        onCheckedChange={(checked) =>
+                                                            setCheckboxes(prev => ({ ...prev, dataPelatihan: !!checked }))
+                                                        }
+                                                    />
+                                                    <Label htmlFor="dataPelatihan">Data Pelatihan</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id="dataDokumen"
+                                                        checked={checkboxes.dataDokumen}
+                                                        onCheckedChange={(checked) =>
+                                                            setCheckboxes(prev => ({ ...prev, dataDokumen: !!checked }))
+                                                        }
+                                                    />
+                                                    <Label htmlFor="dataDokumen">Data Dokumen Penunjang</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id="dokumenPembayaran"
+                                                        checked={checkboxes.dokumenPembayaran}
+                                                        onCheckedChange={(checked) =>
+                                                            setCheckboxes(prev => ({ ...prev, dokumenPembayaran: !!checked }))
+                                                        }
+                                                    />
+                                                    <Label htmlFor="dokumenPembayaran">Dokumen Pembayaran</Label>
+                                                </div>
+                                            </div>
                                             <AlertDialogFooter>
                                                 <AlertDialogCancel>Batal</AlertDialogCancel>
                                                 <AlertDialogAction asChild>
-                                                    <Button type="button" onClick={handleApproval} disabled={processing} className="bg-green-700 hover:bg-green-800 text-white">
+                                                    <Button
+                                                        type="button"
+                                                        onClick={handleApproval}
+                                                        disabled={processing || !allCheckboxesChecked}
+                                                        className="bg-green-700 hover:bg-green-800 text-white disabled:opacity-50"
+                                                    >
                                                         {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
                                                         <Check className="w-4 h-4 mr-2" />
                                                         Setujui Kegiatan
@@ -509,8 +742,8 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                         </div>
                     </div>
                 </form>
-            </div>
-        </AppLayout>
+            </div >
+        </AppLayout >
     )
 }
 

@@ -80,10 +80,10 @@ class ActivityController extends Controller
      */
     public function show(Activity $activity)
     {
-        // return Inertia::render('lembaga/activity/show', [
-        //     'title' => 'Detail Kegiatan',
-        //     'activity' => $activity
-        // ]);
+        return Inertia::render('lembaga/activity/form', [
+            'title' => 'Detail Kegiatan',
+            'activity' => $activity
+        ]);
     }
 
     /**

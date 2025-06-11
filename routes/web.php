@@ -100,6 +100,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('my-certificates');
     });
 
+    // LEMBAGA ROUTES
+
     Route::middleware('role:lembaga')->group(function () {
         Route::resource('activities', ActivityController::class)->names('lembaga.pelatihan');
     });

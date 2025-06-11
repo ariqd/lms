@@ -1,6 +1,6 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
-import { BreadcrumbItem } from '@/types';
+import { Activity, BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import InputError from '@/components/input-error';
 import { LoaderCircle } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
+import { Badge } from '@/components/ui/badge';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -42,7 +43,7 @@ type ActivityForm = {
     documents: string;
 };
 
-const ActivityCreate = () => {
+const ActivityCreate = ({ title, activity }: { title: string, activity?: Activity }) => {
     const [documents, setDocuments] = useState<File[]>([]);
 
     const { data, setData, post, processing, errors } = useForm<ActivityForm>({
@@ -75,10 +76,10 @@ const ActivityCreate = () => {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Pengajuan Pelatihan BA/DA Baru" />
+            <Head title={title} />
             <div className="px-4 py-6">
                 <div className="flex items-center justify-between mb-6">
-                    <Heading title="Pengajuan Pelatihan BA/DA Baru" description="Lengkapi formulir pengajuan pelatihan" />
+                    <Heading title={title} description="Lengkapi formulir pengajuan pelatihan" />
                 </div>
 
                 <form onSubmit={submit} className="space-y-8">
@@ -401,6 +402,83 @@ const ActivityCreate = () => {
                             </div>
                         ))}
                     </div>
+
+                    {/* If see detail, show invoice section */}
+                    {
+                        activity && (
+                            <div className="bg-white rounded-lg border p-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
+                                        <span className="text-red-600 text-sm font-medium">📄</span>
+                                    </div>
+                                    <h3 className="text-lg font-semibold">Invoice</h3>
+                                </div>
+
+                                <div className="border rounded-lg p-4 bg-gray-50">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div>
+                                                <p className="font-medium text-gray-900">Nama Invoice</p>
+                                                <p className="text-sm text-gray-500">invoice.pdf • 100 KB</p>
+                                            </div>
+                                        </div>
+                                        {/* <Badge variant="outline">Uploaded</Badge> */}
+                                        <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
+                                            Download Invoice
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-2 mt-5">
+                                    <label htmlFor="bukti_pembayaran" className='text-sm font-medium text-gray-900'>Upload Bukti Pembayaran</label>
+                                    <div className="grid grid-cols-12 gap-2">
+                                        <Input
+                                            type="file"
+                                            accept=".pdf,.png,.jpg,.jpeg"
+                                            disabled={processing}
+                                            className='cursor-pointer col-span-5'
+                                        />
+                                        <Input
+                                            type="text"
+                                            placeholder="Catatan (opsional)"
+                                            disabled={processing}
+                                            className='col-span-5'
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="default"
+                                            disabled={processing}
+                                            className='bg-blue-600 hover:bg-blue-700 col-span-2'
+                                        >
+                                            Upload Bukti Pembayaran
+                                        </Button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Supports: PDF, PNG, JPG, JPEG (Max: 10MB)
+                                    </p>
+                                </div>
+
+                                <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className='space-y-1'>
+                                                <p className="font-medium text-gray-900">Bukti Pembayaran</p>
+                                                <p className="text-sm text-gray-500">bukti-pembayaran.pdf • 100 KB</p>
+                                                <p className="text-xs text-gray-500 mt-4">
+                                                    <div className="font-medium text-gray-900">Catatan:</div>
+                                                    <div className="text-gray-500">Bukti pembayaran kegiatan</div>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {/* <Badge variant="outline">Uploaded</Badge> */}
+                                        <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
+                                            Download Bukti Pembayaran
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
 
                     {/* Submit Buttons */}
                     <div className="flex justify-between gap-3 pt-6 border-t">
