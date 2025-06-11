@@ -11,7 +11,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ArrowUpDown, ChevronDown, SearchIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -74,13 +74,16 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className="w-full">
-            <div className="flex items-center py-4">
+            <div className="flex items-center py-4 relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                    <SearchIcon size={16} className="text-muted-foreground" />
+                </span>
                 {enableGlobalFilter ? (
                     <Input
                         placeholder={searchPlaceholder}
                         value={globalFilter ?? ""}
                         onChange={(event) => setGlobalFilter(String(event.target.value))}
-                        className="max-w-sm"
+                        className="max-w-sm pl-8"
                     />
                 ) : searchKey ? (
                     <Input
@@ -89,7 +92,7 @@ export function DataTable<TData, TValue>({
                         onChange={(event) =>
                             table.getColumn(searchKey)?.setFilterValue(event.target.value)
                         }
-                        className="max-w-sm"
+                        className="max-w-sm pl-8"
                     />
                 ) : null}
                 <DropdownMenu>

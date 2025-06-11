@@ -1,32 +1,26 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
-import { Activity, BreadcrumbItem } from '@/types';
+import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler, memo } from 'react';
+import { FormEventHandler } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
-import { Check, LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Badge } from '@/components/ui/badge';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Pengajuan Kegiatan BA / DA',
+        href: '/activities',
+    },
+];
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
-    user_id: number;
     name: string;
     description: string;
     goals: string;
@@ -44,43 +38,37 @@ type ActivityForm = {
     notes: string;
 };
 
-const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: BreadcrumbItem[], activity: Activity }) => {
-    const { data, setData, processing, errors, put } = useForm<ActivityForm>({
-        type: activity.type ?? '',
-        name: activity.name ?? '',
-        description: activity.description ?? '',
-        goals: activity.goals ?? '',
-        start_date: activity.start_date ?? '',
-        end_date: activity.end_date ?? '',
-        participant_count: activity.participant_count?.toString() ?? '',
-        location: activity.location ?? '',
-        daily_schedule: activity.daily_schedule ?? '',
-        total_budget: activity.total_budget?.toString() ?? '0',
-        additional_needs: activity.additional_needs ?? '',
-        additional_equipments: activity.additional_equipments ?? '',
-        contact_name: activity.contact_name ?? '',
-        contact_phone: activity.contact_phone ?? '',
-        contact_email: activity.contact_email ?? '',
-        notes: activity.notes ?? '',
-        user_id: activity.user_id ?? 0,
+const ActivityCreate = () => {
+    const { data, setData, post, processing, errors } = useForm<ActivityForm>({
+        type: '',
+        name: '',
+        description: '',
+        goals: '',
+        start_date: '',
+        end_date: '',
+        participant_count: '',
+        location: '',
+        daily_schedule: '',
+        total_budget: '0',
+        additional_needs: '',
+        additional_equipments: '',
+        contact_name: '',
+        contact_phone: '',
+        contact_email: '',
+        notes: '',
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-    };
-
-    const handleApproval = () => {
-        put(route('admin.activity-management.update', {
-            id: activity.id,
-        }));
+        post(route('lembaga.pelatihan.store'));
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Detail Kegiatan" />
+            <Head title="Pengajuan Pelatihan BA/DA Baru" />
             <div className="px-4 py-6">
                 <div className="flex items-center justify-between mb-6">
-                    <Heading title="Detail Kegiatan" description="Verifikasi formulir pengajuan pelatihan" />
+                    <Heading title="Pengajuan Pelatihan BA/DA Baru" description="Lengkapi formulir pengajuan pelatihan" />
                 </div>
 
                 <form onSubmit={submit} className="space-y-8">
@@ -96,7 +84,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="type">Program Pelatihan *</Label>
-                                <Select disabled value={data.type} onValueChange={(value: 'ba' | 'da') => setData('type', value)}>
+                                <Select value={data.type} onValueChange={(value: 'ba' | 'da') => setData('type', value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih program pelatihan" />
                                     </SelectTrigger>
@@ -108,18 +96,6 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                 <InputError message={errors.type} />
                             </div>
 
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="user_id">Nama Lembaga *</Label>
-                                <Input
-                                    id="user_id"
-                                    value={activity.user?.name ?? ''}
-                                    placeholder="Masukkan nama lembaga"
-                                    disabled
-                                />
-                                <InputError message={errors.name} />
-                            </div>
-
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Judul Pelatihan *</Label>
                                 <Input
@@ -127,7 +103,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                     placeholder="Masukkan judul pelatihan"
-                                    disabled
+                                    disabled={processing}
                                 />
                                 <InputError message={errors.name} />
                             </div>
@@ -140,7 +116,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                     onChange={(e) => setData('description', e.target.value)}
                                     placeholder="Jelaskan tujuan, target peserta, dan manfaat program pelatihan ini..."
                                     className="min-h-[120px]"
-                                    disabled
+                                    disabled={processing}
                                 />
                                 <InputError message={errors.description} />
                             </div>
@@ -152,7 +128,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                     value={data.goals}
                                     onChange={(e) => setData('goals', e.target.value)}
                                     placeholder="Tulis tujuan pelatihan"
-                                    disabled
+                                    disabled={processing}
                                 />
                                 <InputError message={errors.goals} />
                             </div>
@@ -177,7 +153,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         type="date"
                                         value={data.start_date}
                                         onChange={(e) => setData('start_date', e.target.value)}
-                                        disabled
+                                        disabled={processing}
                                     />
                                     <InputError message={errors.start_date} />
                                 </div>
@@ -189,7 +165,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         type="date"
                                         value={data.end_date}
                                         onChange={(e) => setData('end_date', e.target.value)}
-                                        disabled
+                                        disabled={processing}
                                     />
                                     <InputError message={errors.end_date} />
                                 </div>
@@ -202,7 +178,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         value={data.participant_count}
                                         onChange={(e) => setData('participant_count', e.target.value)}
                                         placeholder="20"
-                                        disabled
+                                        disabled={processing}
                                     />
                                     <InputError message={errors.participant_count} />
                                 </div>
@@ -215,20 +191,20 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                     value={data.location}
                                     onChange={(e) => setData('location', e.target.value)}
                                     placeholder="Nama tempat, alamat lengkap"
-                                    disabled
+                                    disabled={processing}
                                 />
                                 <InputError message={errors.location} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="daily_schedule">Jadwal Harian *</Label>
+                                <Label htmlFor="daily_schedule">Jadwal Harian</Label>
                                 <Textarea
                                     id="daily_schedule"
                                     value={data.daily_schedule}
                                     onChange={(e) => setData('daily_schedule', e.target.value)}
                                     placeholder="Contoh: Hari 1: 08:00-12:00 Materi A, 13:00-17:00 Materi B"
                                     className="min-h-[100px]"
-                                    disabled
+                                    disabled={processing}
                                 />
                                 <InputError message={errors.daily_schedule} />
                             </div>
@@ -259,33 +235,33 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         }}
                                         className="pl-8"
                                         placeholder="0"
-                                        disabled
+                                        disabled={processing}
                                     />
                                 </div>
                                 <InputError message={errors.total_budget} />
                             </div>
 
                             <div className="grid gap-4">
-                                <Label htmlFor="additional_needs">Kebutuhan Tambahan *</Label>
+                                <Label>Kebutuhan Tambahan</Label>
                                 <Textarea
                                     id="additional_needs"
                                     value={data.additional_needs}
                                     onChange={(e) => setData('additional_needs', e.target.value)}
                                     placeholder="Akomodasi, penginapan, transportasi, dll"
                                     className="min-h-[100px]"
-                                    disabled
+                                    disabled={processing}
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan *</Label>
+                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan</Label>
                                 <Textarea
                                     id="additional_equipments"
                                     value={data.additional_equipments}
                                     onChange={(e) => setData('additional_equipments', e.target.value)}
                                     placeholder="Proyektor, sound system, flipchart, dll"
                                     className="min-h-[100px]"
-                                    disabled
+                                    disabled={processing}
                                 />
                                 <InputError message={errors.additional_equipments} />
                             </div>
@@ -310,7 +286,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         value={data.contact_name}
                                         onChange={(e) => setData('contact_name', e.target.value)}
                                         placeholder="PDM Kota Jakarta"
-                                        disabled
+                                        disabled={processing}
                                     />
                                     <InputError message={errors.contact_name} />
                                 </div>
@@ -323,7 +299,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         value={data.contact_phone}
                                         onChange={(e) => setData('contact_phone', e.target.value)}
                                         placeholder="+62271234567"
-                                        disabled
+                                        disabled={processing}
                                     />
                                     <InputError message={errors.contact_phone} />
                                 </div>
@@ -336,7 +312,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         value={data.contact_email}
                                         onChange={(e) => setData('contact_email', e.target.value)}
                                         placeholder="institution@example.com"
-                                        disabled
+                                        disabled={processing}
                                     />
                                     <InputError message={errors.contact_email} />
                                 </div>
@@ -346,45 +322,13 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
 
                     {/* Submit Buttons */}
                     <div className="flex justify-between gap-3 pt-6 border-t">
-                        <Button type="button" variant="outline" disabled>
+                        <Button type="button" variant="outline" disabled={processing}>
                             Batal
                         </Button>
-                        <div className="flex items-center gap-2">
-                            <Badge variant={activity.is_approved ? 'default' : 'destructive'}>
-                                {activity.is_approved ? 'Disetujui' : 'Belum Disetujui'}
-                            </Badge>
-                            {
-                                !activity.is_approved && (
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button className="bg-green-700 hover:bg-green-800 text-white">
-                                                {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
-                                                <Check className="w-4 h-4 mr-2" />
-                                                Setujui Kegiatan
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Apakah Anda yakin ingin menyetujui kegiatan ini?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Setujui kegiatan ini untuk melanjutkan proses verifikasi.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                <AlertDialogAction asChild>
-                                                    <Button type="button" onClick={handleApproval} disabled={processing} className="bg-green-700 hover:bg-green-800 text-white">
-                                                        {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
-                                                        <Check className="w-4 h-4 mr-2" />
-                                                        Setujui Kegiatan
-                                                    </Button>
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                )
-                            }
-                        </div>
+                        <Button type="submit" disabled={processing}>
+                            {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                            Kirim Proposal
+                        </Button>
                     </div>
                 </form>
             </div>
@@ -392,4 +336,4 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
     )
 }
 
-export default memo(ActivityManagementForm)
+export default ActivityCreate

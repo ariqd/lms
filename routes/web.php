@@ -1,17 +1,17 @@
 <?php
 
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ActivityList;
 use App\Http\Controllers\Admin\ActivityManagementController;
 use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', [LandingController::class, 'index'])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
@@ -59,9 +59,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // KADER ROUTES
 
     Route::middleware('role:kader')->group(function () {
-        Route::get('schedule', function () {
-            return Inertia::render('blank', ['title' => 'Jadwal & Kehadiran']);
-        })->name('schedule');
+        Route::get('activity-list', [ActivityList::class, 'index'])->name('activity-list');
 
         Route::get('materials', function () {
             return Inertia::render('blank', ['title' => 'Materi & Kelas']);

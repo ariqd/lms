@@ -6,9 +6,10 @@ import ProgramInfo from '@/components/landing/program-info';
 import RegistrationSteps from '@/components/landing/registration-steps';
 import UpcomingTrainings from '@/components/landing/upcoming-trainings';
 import LandingLayout from '@/layouts/landing/landing-layout';
+import { Activity } from '@/types';
 import { Head } from '@inertiajs/react';
 
-export default function Welcome() {
+export default function Welcome({ activities }: { activities: Activity[] }) {
     return (
         <LandingLayout>
             <Head title="Welcome">
@@ -19,7 +20,7 @@ export default function Welcome() {
             <ProgramInfo />
             <ApplicationInfo />
             <RegistrationSteps />
-            <UpcomingTrainings />
+            <UpcomingTrainings activities={activities} />
             <FAQAccordion />
             <PortalAccess />
         </LandingLayout>

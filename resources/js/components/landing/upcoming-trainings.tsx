@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Calendar, MapPin, Clock, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Link } from '@inertiajs/react';
+import { Activity } from '@/types';
 
 const trainings = [
     {
@@ -66,12 +67,12 @@ const trainings = [
     },
 ];
 
-const UpcomingTrainings = () => {
+const UpcomingTrainings = ({ activities }: { activities: Activity[] }) => {
     const [filter, setFilter] = useState('all');
 
     const filteredTrainings = filter === 'all'
-        ? trainings
-        : trainings.filter(training => training.type === filter);
+        ? activities
+        : activities.filter(activity => activity.type === filter);
 
     return (
         <section className="py-16 bg-white">
@@ -94,8 +95,8 @@ const UpcomingTrainings = () => {
                         Semua
                     </button>
                     <button
-                        onClick={() => setFilter('Baitul Arqam')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'Baitul Arqam'
+                        onClick={() => setFilter('ba')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'ba'
                             ? 'bg-primary-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
@@ -103,8 +104,8 @@ const UpcomingTrainings = () => {
                         Baitul Arqam
                     </button>
                     <button
-                        onClick={() => setFilter('Darul Arqam')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'Darul Arqam'
+                        onClick={() => setFilter('da')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'da'
                             ? 'bg-primary-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
@@ -112,8 +113,8 @@ const UpcomingTrainings = () => {
                         Darul Arqam
                     </button>
                     <button
-                        onClick={() => setFilter('Pelatihan Khusus')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'Pelatihan Khusus'
+                        onClick={() => setFilter('pelatihan-khusus')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === 'pelatihan-khusus'
                             ? 'bg-primary-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
@@ -127,15 +128,15 @@ const UpcomingTrainings = () => {
                         <div key={training.id} className="overflow-hidden transition-shadow bg-white border border-gray-200 rounded-xl shadow-soft hover:shadow-medium">
                             <div className="p-6">
                                 <div className="inline-block px-3 py-1 mb-4 text-xs font-medium rounded-full text-primary-700 bg-primary-50">
-                                    {training.type}
+                                    {training.type === 'ba' ? 'Baitul Arqam' : training.type === 'da' ? 'Darul Arqam' : 'Pelatihan Khusus'}
                                 </div>
                                 <h3 className="mb-3 text-xl font-semibold text-gray-900">
-                                    {training.title}
+                                    {training.name}
                                 </h3>
                                 <div className="space-y-3">
                                     <div className="flex items-center text-gray-600">
                                         <Calendar size={18} className="mr-2 text-primary-600" />
-                                        <span>{training.date}</span>
+                                        <span>{training.start_date}</span>
                                     </div>
                                     <div className="flex items-center text-gray-600">
                                         <MapPin size={18} className="mr-2 text-primary-600" />
@@ -143,16 +144,16 @@ const UpcomingTrainings = () => {
                                     </div>
                                     <div className="flex items-center text-gray-600">
                                         <Clock size={18} className="mr-2 text-primary-600" />
-                                        <span>{training.time}</span>
+                                        <span>{training.start_date} - {training.end_date}</span>
                                     </div>
                                     <div className="flex items-center text-gray-600">
                                         <Users size={18} className="mr-2 text-primary-600" />
-                                        <span>Kapasitas: {training.capacity} peserta</span>
+                                        <span>Kapasitas: {training.participant_count} peserta</span>
                                     </div>
                                 </div>
                                 <div className="pt-4 mt-4 border-t border-gray-200">
                                     <p className="mb-4 text-sm text-gray-500">
-                                        Batas pendaftaran: <span className="font-semibold">{training.registration_deadline}</span>
+                                        Batas pendaftaran: <span className="font-semibold">{training.end_date}</span>
                                     </p>
                                     <Button variant="outline">
                                         Detail Pelatihan

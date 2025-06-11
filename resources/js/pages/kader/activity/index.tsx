@@ -6,13 +6,12 @@ import AlertComponent from '@/components/alert';
 import { DataTable, DataTableColumnHeader } from '@/components/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { EyeIcon, Plus } from 'lucide-react';
 import { formatCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Manajemen Kegiatan BA / DA',
+        title: 'Pengajuan Kegiatan BA / DA',
         href: '/activities',
     },
 ];
@@ -22,34 +21,15 @@ interface PageProps {
     activities: Activity[];
 }
 
-export default function ActivityManagementIndex({ title, activities }: PageProps) {
+export default function ActivityIndex({ title, activities }: PageProps) {
     const columns: ColumnDef<Activity>[] = [
         {
             accessorKey: "name",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Judul Pelatihan" />
+                <DataTableColumnHeader column={column} title="Nama" />
             ),
             cell: ({ row }) => <div>{row.getValue("name")}</div>,
-            meta: { displayName: "Judul Pelatihan" },
-        },
-        {
-            accessorKey: "user.name",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Nama Lembaga" />
-            ),
-            cell: ({ row }) => <div>{row.original.user?.name ?? '-'}</div>,
-            meta: { displayName: "Nama Lembaga" },
-        },
-        {
-            accessorFn: (row) => {
-                return row.type === 'ba' ? 'Baitul Arqam' : 'Darul Arqam';
-            },
-            id: "type",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Program" />
-            ),
-            cell: ({ row }) => <div>{row.getValue("type")}</div>,
-            meta: { displayName: "Program" },
+            meta: { displayName: "Nama" },
         },
         {
             accessorFn: (row) => {
@@ -70,10 +50,10 @@ export default function ActivityManagementIndex({ title, activities }: PageProps
         {
             accessorKey: "total_budget",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Total Anggaran" />
+                <DataTableColumnHeader column={column} title="Total Budget" />
             ),
             cell: ({ row }) => <div>{formatCurrency(row.getValue("total_budget") as string)}</div>,
-            meta: { displayName: "Total Anggaran" },
+            meta: { displayName: "Total Budget" },
         },
         {
             accessorFn: (row) => {
@@ -92,32 +72,12 @@ export default function ActivityManagementIndex({ title, activities }: PageProps
             meta: { displayName: "Tanggal Dibuat" },
         },
         {
-            id: "status",
-            accessorFn: (row) => {
-                return row.is_approved ? 'Disetujui' : 'Belum Disetujui';
-            },
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Status" />
-            ),
-            cell: ({ row }) => {
-                const status = row.getValue("status") as string;
-                const isApproved = row.original.is_approved;
-
-                return (
-                    <Badge variant={isApproved ? "default" : "destructive"}>
-                        {status}
-                    </Badge>
-                );
-            },
-            meta: { displayName: "Status" },
-        },
-        {
             id: "actions",
             enableHiding: false,
             cell: ({ row }) => {
                 return <div>
                     <Button asChild>
-                        <Link href={route('admin.activity-management.show', row.original.id)}>
+                        <Link href={route('lembaga.pelatihan.show', row.original.id)}>
                             <EyeIcon className="w-4 h-4" />
                             <span>Detail</span>
                         </Link>
@@ -134,7 +94,7 @@ export default function ActivityManagementIndex({ title, activities }: PageProps
                 <div className="flex items-center justify-between">
                     <Heading title={title} />
                     <Button asChild>
-                        <Link href={route('admin.activity-management.create')}>
+                        <Link href={route('lembaga.pelatihan.create')}>
                             <Plus className="w-4 h-4" />
                             <span>Buat Proposal Baru</span>
                         </Link>
@@ -147,7 +107,7 @@ export default function ActivityManagementIndex({ title, activities }: PageProps
                     columns={columns}
                     data={activities}
                     enableGlobalFilter={true}
-                    searchPlaceholder="Cari judul pelatihan atau informasi lainnya..."
+                    searchPlaceholder="Cari nama kegiatan atau informasi lainnya..."
                 />
             </div>
         </AppLayout>

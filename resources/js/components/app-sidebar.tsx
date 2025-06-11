@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { SharedData, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Award, BarChart2, BookOpen, Building2, Calendar, Camera, CreditCard, File, FileText, Layers, LayoutGrid, LineChart, Monitor, User, Users } from 'lucide-react';
+import { Award, BarChart2, BookOpen, Building2, Calendar, CalendarX2, Camera, CreditCard, File, FileText, Layers, LayoutGrid, LineChart, Monitor, User, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useMemo } from 'react';
 
@@ -65,9 +65,14 @@ const kaderNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Jadwal & Kehadiran',
-        href: '/schedule',
+        title: 'Daftar Pelatihan',
+        href: '/activity-list',
         icon: Calendar,
+    },
+    {
+        title: 'Daftar Pelatihan Saya',
+        href: '/my-activity-list',
+        icon: CalendarX2,
     },
     {
         title: 'Materi & Kelas',

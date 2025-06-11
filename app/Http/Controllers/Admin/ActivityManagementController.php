@@ -33,4 +33,13 @@ class ActivityManagementController extends Controller
             ],
         ]);
     }
+
+    public function update($id)
+    {
+        $activity = Activity::find($id);
+        $activity->is_approved = true;
+        $activity->save();
+
+        return redirect()->route('admin.activity-management.index')->with('success', 'Kegiatan berhasil disetujui');
+    }
 }
