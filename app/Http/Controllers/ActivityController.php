@@ -25,7 +25,7 @@ class ActivityController extends Controller
      */
     public function create()
     {
-        return Inertia::render('lembaga/activity/create');
+        return Inertia::render('lembaga/activity/form');
     }
 
     /**

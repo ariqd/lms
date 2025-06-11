@@ -4,69 +4,6 @@ import { Button } from '../ui/button';
 import { Link } from '@inertiajs/react';
 import { Activity } from '@/types';
 
-const trainings = [
-    {
-        id: 1,
-        title: 'Baitul Arqam Tingkat Dasar',
-        date: '20-22 Agustus 2025',
-        location: 'Gedung Dakwah Muhammadiyah, Yogyakarta',
-        time: '08.00 - 16.00 WIB',
-        capacity: 50,
-        registration_deadline: '10 Agustus 2025',
-        type: 'Baitul Arqam',
-    },
-    {
-        id: 2,
-        title: 'Darul Arqam Tingkat Madya',
-        date: '15-18 September 2025',
-        location: 'Universitas Muhammadiyah Yogyakarta',
-        time: '08.00 - 16.00 WIB',
-        capacity: 40,
-        registration_deadline: '1 September 2025',
-        type: 'Darul Arqam',
-    },
-    {
-        id: 3,
-        title: 'Baitul Arqam Pimpinan Cabang',
-        date: '5-7 Oktober 2025',
-        location: 'Pondok Pesantren Muhammadiyah, Sleman',
-        time: '08.00 - 16.00 WIB',
-        capacity: 60,
-        registration_deadline: '20 September 2025',
-        type: 'Baitul Arqam',
-    },
-    {
-        id: 4,
-        title: 'Pelatihan Mubaligh Muhammadiyah',
-        date: '12-14 November 2025',
-        location: 'Masjid Syuhada, Yogyakarta',
-        time: '08.00 - 16.00 WIB',
-        capacity: 30,
-        registration_deadline: '30 Oktober 2025',
-        type: 'Pelatihan Khusus',
-    },
-    {
-        id: 5,
-        title: 'Baitul Arqam Amal Usaha Muhammadiyah',
-        date: '8-10 Desember 2025',
-        location: 'Hotel Saphir Yogyakarta',
-        time: '08.00 - 16.00 WIB',
-        capacity: 45,
-        registration_deadline: '25 November 2025',
-        type: 'Baitul Arqam',
-    },
-    {
-        id: 6,
-        title: 'Darul Arqam Tingkat Dasar',
-        date: '20-24 Januari 2026',
-        location: 'Gedung Dakwah Muhammadiyah, Yogyakarta',
-        time: '08.00 - 16.00 WIB',
-        capacity: 35,
-        registration_deadline: '5 Januari 2026',
-        type: 'Darul Arqam',
-    },
-];
-
 const UpcomingTrainings = ({ activities }: { activities: Activity[] }) => {
     const [filter, setFilter] = useState('all');
 

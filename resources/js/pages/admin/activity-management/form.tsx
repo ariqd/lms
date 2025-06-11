@@ -32,6 +32,8 @@ type ActivityForm = {
     goals: string;
     start_date: string;
     end_date: string;
+    start_time: string;
+    end_time: string;
     participant_count: string;
     location: string;
     daily_schedule: string;
@@ -42,6 +44,8 @@ type ActivityForm = {
     contact_phone: string;
     contact_email: string;
     notes: string;
+    registration_deadline: string;
+    documents: string;
 };
 
 const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: BreadcrumbItem[], activity: Activity }) => {
@@ -52,6 +56,8 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
         goals: activity.goals ?? '',
         start_date: activity.start_date ?? '',
         end_date: activity.end_date ?? '',
+        start_time: '',
+        end_time: '',
         participant_count: activity.participant_count?.toString() ?? '',
         location: activity.location ?? '',
         daily_schedule: activity.daily_schedule ?? '',
@@ -62,6 +68,8 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
         contact_phone: activity.contact_phone ?? '',
         contact_email: activity.contact_email ?? '',
         notes: activity.notes ?? '',
+        registration_deadline: '',
+        documents: '',
         user_id: activity.user_id ?? 0,
     });
 
@@ -192,6 +200,44 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         disabled
                                     />
                                     <InputError message={errors.end_date} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="registration_deadline">Deadline Pendaftaran *</Label>
+                                    <Input
+                                        id="registration_deadline"
+                                        type="date"
+                                        value={data.registration_deadline}
+                                        onChange={(e) => setData('registration_deadline', e.target.value)}
+                                        disabled
+                                    />
+                                    <InputError message={errors.registration_deadline} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="start_time">Waktu Mulai *</Label>
+                                    <Input
+                                        id="start_time"
+                                        type="time"
+                                        value={data.start_time}
+                                        onChange={(e) => setData('start_time', e.target.value)}
+                                        disabled
+                                    />
+                                    <InputError message={errors.start_time} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="end_time">Waktu Selesai *</Label>
+                                    <Input
+                                        id="end_time"
+                                        type="time"
+                                        value={data.end_time}
+                                        onChange={(e) => setData('end_time', e.target.value)}
+                                        disabled
+                                    />
+                                    <InputError message={errors.end_time} />
                                 </div>
 
                                 <div className="grid gap-2">
@@ -339,6 +385,82 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         disabled
                                     />
                                     <InputError message={errors.contact_email} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Dokumen Penunjang */}
+                    <div className="bg-white rounded-lg border p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
+                                <span className="text-red-600 text-sm font-medium">📄</span>
+                            </div>
+                            <h3 className="text-lg font-semibold">Dokumen Penunjang</h3>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Dummy Document 1 */}
+                            <div className="border rounded-lg p-4 bg-gray-50">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                                            <span className="text-blue-600 text-sm font-medium">📋</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900">Proposal Kegiatan</p>
+                                            <p className="text-sm text-gray-500">proposal-kegiatan-ba-da.pdf • 2.5 MB</p>
+                                        </div>
+                                    </div>
+                                    <Badge variant="outline">Uploaded</Badge>
+                                </div>
+                            </div>
+
+                            {/* Dummy Document 2 */}
+                            <div className="border rounded-lg p-4 bg-gray-50">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
+                                            <span className="text-green-600 text-sm font-medium">💰</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900">Rincian Anggaran</p>
+                                            <p className="text-sm text-gray-500">rincian-anggaran.xlsx • 156 KB</p>
+                                        </div>
+                                    </div>
+                                    <Badge variant="outline">Uploaded</Badge>
+                                </div>
+                            </div>
+
+                            {/* Dummy Document 3 */}
+                            <div className="border rounded-lg p-4 bg-gray-50">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-8 h-8 bg-purple-100 rounded flex items-center justify-center">
+                                            <span className="text-purple-600 text-sm font-medium">📅</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900">Jadwal Kegiatan</p>
+                                            <p className="text-sm text-gray-500">jadwal-kegiatan.pdf • 890 KB</p>
+                                        </div>
+                                    </div>
+                                    <Badge variant="outline">Uploaded</Badge>
+                                </div>
+                            </div>
+
+                            {/* Dummy Document 4 */}
+                            <div className="border rounded-lg p-4 bg-gray-50">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-8 h-8 bg-yellow-100 rounded flex items-center justify-center">
+                                            <span className="text-yellow-600 text-sm font-medium">📋</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900">Surat Rekomendasi</p>
+                                            <p className="text-sm text-gray-500">surat-rekomendasi.pdf • 1.2 MB</p>
+                                        </div>
+                                    </div>
+                                    <Badge variant="outline">Uploaded</Badge>
                                 </div>
                             </div>
                         </div>

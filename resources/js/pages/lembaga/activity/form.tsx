@@ -2,7 +2,7 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +26,8 @@ type ActivityForm = {
     goals: string;
     start_date: string;
     end_date: string;
+    start_time: string;
+    end_time: string;
     participant_count: string;
     location: string;
     daily_schedule: string;
@@ -36,9 +38,13 @@ type ActivityForm = {
     contact_phone: string;
     contact_email: string;
     notes: string;
+    registration_deadline: string;
+    documents: string;
 };
 
 const ActivityCreate = () => {
+    const [documents, setDocuments] = useState<File[]>([]);
+
     const { data, setData, post, processing, errors } = useForm<ActivityForm>({
         type: '',
         name: '',
@@ -56,6 +62,10 @@ const ActivityCreate = () => {
         contact_phone: '',
         contact_email: '',
         notes: '',
+        registration_deadline: '',
+        start_time: '',
+        end_time: '',
+        documents: '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -171,6 +181,44 @@ const ActivityCreate = () => {
                                 </div>
 
                                 <div className="grid gap-2">
+                                    <Label htmlFor="participant_count">Deadline Pendaftaran *</Label>
+                                    <Input
+                                        id="registration_deadline"
+                                        type="date"
+                                        value={data.registration_deadline}
+                                        onChange={(e) => setData('registration_deadline', e.target.value)}
+                                        disabled={processing}
+                                    />
+                                    <InputError message={errors.registration_deadline} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="start_time">Waktu Mulai *</Label>
+                                    <Input
+                                        id="start_time"
+                                        type="time"
+                                        value={data.start_time}
+                                        onChange={(e) => setData('start_time', e.target.value)}
+                                        disabled={processing}
+                                    />
+                                    <InputError message={errors.start_time} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="end_time">Waktu Selesai *</Label>
+                                    <Input
+                                        id="end_time"
+                                        type="time"
+                                        value={data.end_time}
+                                        onChange={(e) => setData('end_time', e.target.value)}
+                                        disabled={processing}
+                                    />
+                                    <InputError message={errors.end_time} />
+                                </div>
+
+                                <div className="grid gap-2">
                                     <Label htmlFor="participant_count">Jumlah Peserta *</Label>
                                     <Input
                                         id="participant_count"
@@ -197,7 +245,7 @@ const ActivityCreate = () => {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="daily_schedule">Jadwal Harian</Label>
+                                <Label htmlFor="daily_schedule">Jadwal Harian *</Label>
                                 <Textarea
                                     id="daily_schedule"
                                     value={data.daily_schedule}
@@ -242,7 +290,7 @@ const ActivityCreate = () => {
                             </div>
 
                             <div className="grid gap-4">
-                                <Label>Kebutuhan Tambahan</Label>
+                                <Label htmlFor="additional_needs">Kebutuhan Tambahan *</Label>
                                 <Textarea
                                     id="additional_needs"
                                     value={data.additional_needs}
@@ -251,10 +299,11 @@ const ActivityCreate = () => {
                                     className="min-h-[100px]"
                                     disabled={processing}
                                 />
+                                <InputError message={errors.additional_needs} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan</Label>
+                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan *</Label>
                                 <Textarea
                                     id="additional_equipments"
                                     value={data.additional_equipments}
@@ -318,6 +367,39 @@ const ActivityCreate = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Dokumen Penunjang */}
+                    <div className="bg-white rounded-lg border p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
+                                <span className="text-red-600 text-sm font-medium">📄</span>
+                            </div>
+                            <h3 className="text-lg font-semibold">Dokumen Penunjang</h3>
+                        </div>
+
+                        {/* Multiple File Upload with Add button */}
+                        <div className="grid gap-2">
+                            <div className="grid grid-cols-12 gap-2">
+                                <Input type="text" id="documents" value={data.documents} onChange={(e) => setData('documents', e.target.value)} placeholder="Masukkan nama dokumen" disabled={processing} className='col-span-5' />
+                                <Input type="file" id="documents" multiple disabled={processing} className='cursor-pointer col-span-5' />
+                                <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2' onClick={() => setDocuments([...documents, new File([], 'new-document.pdf')])}>
+                                    Tambah Dokumen
+                                </Button>
+                            </div>
+                            <InputError message={errors.documents} />
+                        </div>
+                        {documents.map((document, index) => (
+                            <div className="grid gap-2 mt-5">
+                                <div className="grid grid-cols-12 gap-2">
+                                    <Input type="text" id="documents" value={data.documents} onChange={(e) => setData('documents', e.target.value)} placeholder="Masukkan nama dokumen" disabled={processing} className='col-span-5' />
+                                    <Input type="file" id="documents" multiple disabled={processing} className='cursor-pointer col-span-5' />
+                                    <Button type="button" variant="default" disabled={processing} className='bg-red-600 hover:bg-red-700 col-span-2' onClick={() => setDocuments(documents.filter((_, i) => i !== index))}>
+                                        Hapus Dokumen
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     {/* Submit Buttons */}
