@@ -61,9 +61,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:kader')->group(function () {
         Route::get('activity-list', [ActivityList::class, 'index'])->name('activity-list');
 
+        Route::get('profile', function () {
+            return Inertia::render('blank', ['title' => 'Profil Saya']);
+        })->name('profile');
+
         Route::get('materials', function () {
             return Inertia::render('blank', ['title' => 'Materi & Kelas']);
         })->name('materials');
+
+        Route::prefix('my-activity-list')->group(function () {
+            Route::get('materials', function () {
+                return Inertia::render('blank', ['title' => 'Materi & Kelas']);
+            })->name('my-activity-list.materials');
+
+            Route::get('assignments', function () {
+                return Inertia::render('blank', ['title' => 'Tugas']);
+            })->name('my-activity-list.assignments');
+
+            Route::get('quizzes', function () {
+                return Inertia::render('blank', ['title' => 'Quiz']);
+            })->name('my-activity-list.quizzes');
+
+            Route::get('progress', function () {
+                return Inertia::render('blank', ['title' => 'Progress Belajar']);
+            })->name('my-activity-list.progress');
+
+            Route::get('schedule', function () {
+                return Inertia::render('blank', ['title' => 'Jadwal dan Presensi']);
+            })->name('my-activity-list.schedule');
+        });
 
         Route::get('progress', function () {
             return Inertia::render('blank', ['title' => 'Progress Belajar']);

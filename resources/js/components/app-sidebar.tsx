@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { SharedData, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Award, BarChart2, BookOpen, Building2, Calendar, CalendarX2, Camera, CreditCard, File, FileText, Layers, LayoutGrid, LineChart, Monitor, User, Users } from 'lucide-react';
+import { Award, BarChart2, BookOpen, Building2, Calendar, Camera, CreditCard, File, FileText, Layers, LayoutGrid, Monitor, User, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useMemo } from 'react';
 
@@ -60,9 +60,14 @@ const userNavItems: NavItem[] = [
 
 const kaderNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Beranda',
         href: '/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Profil Saya',
+        href: '/profile',
+        icon: User,
     },
     {
         title: 'Daftar Pelatihan',
@@ -71,21 +76,22 @@ const kaderNavItems: NavItem[] = [
     },
     {
         title: 'Daftar Pelatihan Saya',
-        href: '/my-activity-list',
-        icon: CalendarX2,
+        icon: Calendar,
+        items: [
+            { title: 'Materi', href: '/my-activity-list/materials' },
+            { title: 'Tugas', href: '/my-activity-list/assignments' },
+            { title: 'Quiz', href: '/my-activity-list/quizzes' },
+            { title: 'Progress Belajar', href: '/my-activity-list/progress' },
+            { title: 'Jadwal dan Presensi', href: '/my-activity-list/schedule' },
+        ],
     },
     {
-        title: 'Materi & Kelas',
+        title: 'Evaluasi dan Feedback',
         href: '/materials',
         icon: BookOpen,
     },
     {
-        title: 'Progress Belajar',
-        href: '/progress',
-        icon: LineChart,
-    },
-    {
-        title: 'Sertifikat',
+        title: 'Sertifikat dan Dokumentasi',
         href: '/my-certificates',
         icon: Award,
     },
