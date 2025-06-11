@@ -59,7 +59,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // KADER ROUTES
 
     Route::middleware('role:kader')->group(function () {
-        Route::get('activity-list', [ActivityList::class, 'index'])->name('activity-list');
+        Route::get('activity-list', [ActivityList::class, 'index'])->name('kader.pelatihan.index');
+        Route::get('activity-list/{id}', [ActivityList::class, 'show'])->name('kader.pelatihan.show');
 
         Route::get('profile', function () {
             return Inertia::render('blank', ['title' => 'Profil Saya']);
