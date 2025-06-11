@@ -1,26 +1,20 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
-import { BreadcrumbItem } from '@/types';
+import { Activity, BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
-import { LoaderCircle } from 'lucide-react';
+import { Check, LoaderCircle } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Pengajuan Kegiatan BA / DA',
-        href: '/activities',
-    },
-];
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
+    user_id: number;
     name: string;
     description: string;
     goals: string;
@@ -38,37 +32,38 @@ type ActivityForm = {
     notes: string;
 };
 
-const ActivityCreate = () => {
-    const { data, setData, post, processing, errors } = useForm<ActivityForm>({
-        type: '',
-        name: '',
-        description: '',
-        goals: '',
-        start_date: '',
-        end_date: '',
-        participant_count: '',
-        location: '',
-        daily_schedule: '',
-        total_budget: '0',
-        additional_needs: '',
-        additional_equipments: '',
-        contact_name: '',
-        contact_phone: '',
-        contact_email: '',
-        notes: '',
+const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: BreadcrumbItem[], activity: Activity }) => {
+    const { data, setData, processing, errors } = useForm<ActivityForm>({
+        type: activity.type ?? '',
+        name: activity.name ?? '',
+        description: activity.description ?? '',
+        goals: activity.goals ?? '',
+        start_date: activity.start_date ?? '',
+        end_date: activity.end_date ?? '',
+        participant_count: activity.participant_count?.toString() ?? '',
+        location: activity.location ?? '',
+        daily_schedule: activity.daily_schedule ?? '',
+        total_budget: activity.total_budget?.toString() ?? '0',
+        additional_needs: activity.additional_needs ?? '',
+        additional_equipments: activity.additional_equipments ?? '',
+        contact_name: activity.contact_name ?? '',
+        contact_phone: activity.contact_phone ?? '',
+        contact_email: activity.contact_email ?? '',
+        notes: activity.notes ?? '',
+        user_id: activity.user_id ?? 0,
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('lembaga.pelatihan.store'));
+        // post(route('admin.activity-management.store'));
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Pengajuan Pelatihan BA/DA Baru" />
+            <Head title="Detail Kegiatan" />
             <div className="px-4 py-6">
                 <div className="flex items-center justify-between mb-6">
-                    <Heading title="Pengajuan Pelatihan BA/DA Baru" description="Lengkapi formulir pengajuan pelatihan" />
+                    <Heading title="Detail Kegiatan" description="Verifikasi formulir pengajuan pelatihan" />
                 </div>
 
                 <form onSubmit={submit} className="space-y-8">
@@ -84,7 +79,7 @@ const ActivityCreate = () => {
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="type">Program Pelatihan *</Label>
-                                <Select value={data.type} onValueChange={(value: 'ba' | 'da') => setData('type', value)}>
+                                <Select disabled value={data.type} onValueChange={(value: 'ba' | 'da') => setData('type', value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih program pelatihan" />
                                     </SelectTrigger>
@@ -96,6 +91,18 @@ const ActivityCreate = () => {
                                 <InputError message={errors.type} />
                             </div>
 
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="user_id">Nama Lembaga *</Label>
+                                <Input
+                                    id="user_id"
+                                    value={activity.user?.name ?? ''}
+                                    placeholder="Masukkan nama lembaga"
+                                    disabled
+                                />
+                                <InputError message={errors.name} />
+                            </div>
+
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Judul Pelatihan *</Label>
                                 <Input
@@ -103,7 +110,7 @@ const ActivityCreate = () => {
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                     placeholder="Masukkan judul pelatihan"
-                                    disabled={processing}
+                                    disabled
                                 />
                                 <InputError message={errors.name} />
                             </div>
@@ -116,7 +123,7 @@ const ActivityCreate = () => {
                                     onChange={(e) => setData('description', e.target.value)}
                                     placeholder="Jelaskan tujuan, target peserta, dan manfaat program pelatihan ini..."
                                     className="min-h-[120px]"
-                                    disabled={processing}
+                                    disabled
                                 />
                                 <InputError message={errors.description} />
                             </div>
@@ -128,7 +135,7 @@ const ActivityCreate = () => {
                                     value={data.goals}
                                     onChange={(e) => setData('goals', e.target.value)}
                                     placeholder="Tulis tujuan pelatihan"
-                                    disabled={processing}
+                                    disabled
                                 />
                                 <InputError message={errors.goals} />
                             </div>
@@ -153,7 +160,7 @@ const ActivityCreate = () => {
                                         type="date"
                                         value={data.start_date}
                                         onChange={(e) => setData('start_date', e.target.value)}
-                                        disabled={processing}
+                                        disabled
                                     />
                                     <InputError message={errors.start_date} />
                                 </div>
@@ -165,7 +172,7 @@ const ActivityCreate = () => {
                                         type="date"
                                         value={data.end_date}
                                         onChange={(e) => setData('end_date', e.target.value)}
-                                        disabled={processing}
+                                        disabled
                                     />
                                     <InputError message={errors.end_date} />
                                 </div>
@@ -178,7 +185,7 @@ const ActivityCreate = () => {
                                         value={data.participant_count}
                                         onChange={(e) => setData('participant_count', e.target.value)}
                                         placeholder="20"
-                                        disabled={processing}
+                                        disabled
                                     />
                                     <InputError message={errors.participant_count} />
                                 </div>
@@ -191,20 +198,20 @@ const ActivityCreate = () => {
                                     value={data.location}
                                     onChange={(e) => setData('location', e.target.value)}
                                     placeholder="Nama tempat, alamat lengkap"
-                                    disabled={processing}
+                                    disabled
                                 />
                                 <InputError message={errors.location} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="daily_schedule">Jadwal Harian</Label>
+                                <Label htmlFor="daily_schedule">Jadwal Harian *</Label>
                                 <Textarea
                                     id="daily_schedule"
                                     value={data.daily_schedule}
                                     onChange={(e) => setData('daily_schedule', e.target.value)}
                                     placeholder="Contoh: Hari 1: 08:00-12:00 Materi A, 13:00-17:00 Materi B"
                                     className="min-h-[100px]"
-                                    disabled={processing}
+                                    disabled
                                 />
                                 <InputError message={errors.daily_schedule} />
                             </div>
@@ -235,33 +242,33 @@ const ActivityCreate = () => {
                                         }}
                                         className="pl-8"
                                         placeholder="0"
-                                        disabled={processing}
+                                        disabled
                                     />
                                 </div>
                                 <InputError message={errors.total_budget} />
                             </div>
 
                             <div className="grid gap-4">
-                                <Label>Kebutuhan Tambahan</Label>
+                                <Label htmlFor="additional_needs">Kebutuhan Tambahan *</Label>
                                 <Textarea
                                     id="additional_needs"
                                     value={data.additional_needs}
                                     onChange={(e) => setData('additional_needs', e.target.value)}
                                     placeholder="Akomodasi, penginapan, transportasi, dll"
                                     className="min-h-[100px]"
-                                    disabled={processing}
+                                    disabled
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan</Label>
+                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan *</Label>
                                 <Textarea
                                     id="additional_equipments"
                                     value={data.additional_equipments}
                                     onChange={(e) => setData('additional_equipments', e.target.value)}
                                     placeholder="Proyektor, sound system, flipchart, dll"
                                     className="min-h-[100px]"
-                                    disabled={processing}
+                                    disabled
                                 />
                                 <InputError message={errors.additional_equipments} />
                             </div>
@@ -286,7 +293,7 @@ const ActivityCreate = () => {
                                         value={data.contact_name}
                                         onChange={(e) => setData('contact_name', e.target.value)}
                                         placeholder="PDM Kota Jakarta"
-                                        disabled={processing}
+                                        disabled
                                     />
                                     <InputError message={errors.contact_name} />
                                 </div>
@@ -299,7 +306,7 @@ const ActivityCreate = () => {
                                         value={data.contact_phone}
                                         onChange={(e) => setData('contact_phone', e.target.value)}
                                         placeholder="+62271234567"
-                                        disabled={processing}
+                                        disabled
                                     />
                                     <InputError message={errors.contact_phone} />
                                 </div>
@@ -312,7 +319,7 @@ const ActivityCreate = () => {
                                         value={data.contact_email}
                                         onChange={(e) => setData('contact_email', e.target.value)}
                                         placeholder="institution@example.com"
-                                        disabled={processing}
+                                        disabled
                                     />
                                     <InputError message={errors.contact_email} />
                                 </div>
@@ -322,12 +329,13 @@ const ActivityCreate = () => {
 
                     {/* Submit Buttons */}
                     <div className="flex justify-between gap-3 pt-6 border-t">
-                        <Button type="button" variant="outline" disabled={processing}>
+                        <Button type="button" variant="outline" disabled>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" disabled={processing} className="bg-green-700 hover:bg-green-800 text-white">
                             {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
-                            Kirim Proposal
+                            <Check className="w-4 h-4 mr-2" />
+                            Setujui Kegiatan
                         </Button>
                     </div>
                 </form>
@@ -336,4 +344,4 @@ const ActivityCreate = () => {
     )
 }
 
-export default ActivityCreate
+export default memo(ActivityManagementForm)

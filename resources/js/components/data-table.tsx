@@ -35,6 +35,7 @@ interface DataTableProps<TData, TValue> {
     data: TData[];
     searchKey?: string;
     searchPlaceholder?: string;
+    enableGlobalFilter?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -42,17 +43,20 @@ export function DataTable<TData, TValue>({
     data,
     searchKey,
     searchPlaceholder = "Search...",
+    enableGlobalFilter = false,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = React.useState({});
+    const [globalFilter, setGlobalFilter] = React.useState("");
 
     const table = useReactTable({
         data,
         columns,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -64,13 +68,21 @@ export function DataTable<TData, TValue>({
             columnFilters,
             columnVisibility,
             rowSelection,
+            globalFilter,
         },
     });
 
     return (
         <div className="w-full">
             <div className="flex items-center py-4">
-                {searchKey && (
+                {enableGlobalFilter ? (
+                    <Input
+                        placeholder={searchPlaceholder}
+                        value={globalFilter ?? ""}
+                        onChange={(event) => setGlobalFilter(String(event.target.value))}
+                        className="max-w-sm"
+                    />
+                ) : searchKey ? (
                     <Input
                         placeholder={searchPlaceholder}
                         value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
@@ -79,11 +91,11 @@ export function DataTable<TData, TValue>({
                         }
                         className="max-w-sm"
                     />
-                )}
+                ) : null}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">
-                            Columns <ChevronDown className="ml-2 h-4 w-4" />
+                            Kolom <ChevronDown className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -91,6 +103,10 @@ export function DataTable<TData, TValue>({
                             .getAllColumns()
                             .filter((column) => column.getCanHide())
                             .map((column) => {
+                                // Get display name from column meta or fallback to formatted column id
+                                const displayName = (column.columnDef.meta as { displayName?: string })?.displayName ||
+                                    column.id.replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
                                 return (
                                     <DropdownMenuCheckboxItem
                                         key={column.id}
@@ -100,7 +116,7 @@ export function DataTable<TData, TValue>({
                                             column.toggleVisibility(!!value)
                                         }
                                     >
-                                        {column.id}
+                                        {displayName}
                                     </DropdownMenuCheckboxItem>
                                 );
                             })}

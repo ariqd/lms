@@ -75,4 +75,8 @@ export interface Activity {
     contact_email: string;
     notes: string;
     is_approved: boolean;
+    user_id: number;
+    user: User;
+    created_at?: string;
+    updated_at?: string;
 }

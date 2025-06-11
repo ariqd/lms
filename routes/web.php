@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\Admin\ActivityManagementController;
 use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -25,6 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('classes');
 
         Route::get('users', [UserController::class, 'index'])->name('users.index');
+
+        Route::resource('activity-management', ActivityManagementController::class)->names('admin.activity-management');
 
         Route::get('institutions', [InstitutionController::class, 'index'])->name('institutions.index');
         Route::post('institutions', [InstitutionController::class, 'store'])->name('institutions.store');

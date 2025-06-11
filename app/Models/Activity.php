@@ -26,4 +26,9 @@ class Activity extends Model
         'notes',
         'is_approved',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

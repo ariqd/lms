@@ -14,8 +14,8 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Program & Kelas',
-        href: '/classes',
+        title: 'Manajemen Kegiatan',
+        href: '/activity-management',
         icon: Layers,
     },
     {
