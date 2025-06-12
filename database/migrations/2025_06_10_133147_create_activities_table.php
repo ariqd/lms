@@ -16,10 +16,14 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->enum('type', ['ba', 'da']);
             $table->string('name');
+            $table->string('slug')->unique();
             $table->longText('description');
             $table->longText('goals');
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->date('date_start');
+            $table->date('date_end');
+            $table->time('time_start');
+            $table->time('time_end');
+            $table->date('registration_deadline');
             $table->integer('participant_count');
             $table->string('location');
             $table->longText('daily_schedule');
@@ -30,7 +34,10 @@ return new class extends Migration
             $table->string('contact_phone');
             $table->string('contact_email');
             $table->longText('notes')->nullable();
-            $table->boolean('is_approved')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['pending', 'approved', 'rejected', 'in_progress', 'finished', 'cancelled'])->default('pending');
+            $table->string('invoice_file')->nullable();
+            $table->string('payment_proof_file')->nullable();
             $table->timestamps();
         });
     }

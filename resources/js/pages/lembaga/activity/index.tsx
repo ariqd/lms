@@ -6,7 +6,9 @@ import AlertComponent from '@/components/alert';
 import { DataTable, DataTableColumnHeader } from '@/components/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { EyeIcon, Plus } from 'lucide-react';
+import { formatCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,61 +27,71 @@ export default function ActivityIndex({ title, activities }: PageProps) {
         {
             accessorKey: "name",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Nama" />
+                <DataTableColumnHeader column={column} title="Judul Pelatihan" />
             ),
             cell: ({ row }) => <div>{row.getValue("name")}</div>,
+            meta: { displayName: "Judul Pelatihan" },
         },
         {
-            accessorKey: "start_date",
+            accessorFn: (row) => {
+                return row.type === 'ba' ? 'Baitul Arqam' : 'Darul Arqam';
+            },
+            id: "type",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} title="Program" />
+            ),
+            cell: ({ row }) => <Badge variant={row.original.type === 'ba' ? 'default' : 'secondary'}>{row.getValue("type")}</Badge>,
+            meta: { displayName: "Program" },
+        },
+        {
+            accessorFn: (row) => {
+                const date = row.start_date;
+                return date ? new Date(date).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : '-';
+            },
+            id: "start_date",
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Tanggal Mulai" />
             ),
-            cell: ({ row }) => {
-                const date = row.getValue("start_date") as string;
-                return (
-                    <div>
-                        {date ? new Date(date).toLocaleDateString('id-ID', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        }) : '-'}
-                    </div>
-                );
-            },
+            cell: ({ row }) => <div>{row.getValue("start_date")}</div>,
+            meta: { displayName: "Tanggal Mulai" },
         },
         {
             accessorKey: "total_budget",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Total Budget" />
+                <DataTableColumnHeader column={column} title="Total Anggaran" />
             ),
-            cell: ({ row }) => <div>{row.getValue("total_budget")}</div>,
+            cell: ({ row }) => <div>{formatCurrency(row.getValue("total_budget") as string)}</div>,
+            meta: { displayName: "Total Anggaran" },
         },
         {
-            accessorKey: "created_at",
+            accessorFn: (row) => {
+                const date = row.created_at;
+                return date ? new Date(date).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : '-';
+            },
+            id: "created_at",
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Tanggal Dibuat" />
             ),
-            cell: ({ row }) => {
-                const date = row.getValue("created_at") as string;
-                return (
-                    <div>
-                        {date ? new Date(date).toLocaleDateString('id-ID', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        }) : '-'}
-                    </div>
-                );
-            },
+            cell: ({ row }) => <div>{row.getValue("created_at")}</div>,
+            meta: { displayName: "Tanggal Dibuat" },
         },
         {
             id: "actions",
+            enableHiding: false,
             cell: ({ row }) => {
                 return <div>
-                    <Button>
+                    <Button asChild>
                         <Link href={route('lembaga.pelatihan.show', row.original.id)}>
                             <EyeIcon className="w-4 h-4" />
-                            <span className="sr-only">Lihat</span>
+                            <span>Detail</span>
                         </Link>
                     </Button>
                 </div>
@@ -106,8 +118,8 @@ export default function ActivityIndex({ title, activities }: PageProps) {
                 <DataTable
                     columns={columns}
                     data={activities}
-                    searchKey="name"
-                    searchPlaceholder="Cari pelatihan..."
+                    enableGlobalFilter={true}
+                    searchPlaceholder="Cari judul pelatihan atau informasi lainnya..."
                 />
             </div>
         </AppLayout>
