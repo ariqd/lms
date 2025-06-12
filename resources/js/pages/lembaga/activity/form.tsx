@@ -1,6 +1,6 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
-import { Activity, BreadcrumbItem } from '@/types';
+import { Activity, BreadcrumbItem, DocumentItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,12 +15,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-
-type DocumentItem = {
-    id: string;
-    name: string;
-    file: File | string | null;
-};
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
@@ -53,7 +47,7 @@ type PageProps = {
 }
 
 const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps) => {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, put } = useForm({
         type: activity?.type || '',
         name: activity?.name || '',
         description: activity?.description || '',
@@ -73,9 +67,13 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
         contact_email: activity?.contact_email || '',
         notes: activity?.notes || '',
         registration_deadline: activity?.registration_deadline || '',
-        documents: (activity as Activity & { files?: DocumentItem[] })?.files || [
-            { id: Date.now().toString(), name: '', file: null }
-        ],
+        documents: (activity as Activity & { files?: DocumentItem[] })?.files?.map(file => ({
+            id: file.id?.toString() || Date.now().toString(),
+            name: file.name,
+            file: file.file // This will be the file path string for existing files
+        })) || [
+                { id: Date.now().toString(), name: '', file: null }
+            ],
     } as ActivityForm);
 
     const addDocument = () => {
@@ -128,10 +126,12 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        post(route('lembaga.pelatihan.store'));
+        if (activity) {
+            put(route('lembaga.pelatihan.update', activity.id));
+        } else {
+            post(route('lembaga.pelatihan.store'));
+        }
     };
-
-    console.log('data', data);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -525,6 +525,8 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                                     <li>Upload dokumen pendukung seperti detail pelatihan, RAB, surat rekomendasi, dll.</li>
                                     <li>Format yang didukung: <span className="font-medium">PDF, PNG, JPG, JPEG</span></li>
                                     <li>Ukuran maksimal: <span className="font-medium">10MB per file</span></li>
+                                    {activity && <li>Update dokumen yang sudah diupload dengan mengubah nama dokumen dan/atau mengupload ulang file dokumen.</li>}
+                                    {activity && <li>Dokumen akan terupdate setelah tombol <span className="font-medium">Simpan Perubahan</span> ditekan.</li>}
                                 </ul>
                             </div>
 
@@ -580,7 +582,6 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                                             </p>
                                         </div>
 
-                                        {/* {document.file && ( */}
                                         <div>
                                             <Label className="text-sm ml-2">
                                                 File Dokumen:
@@ -592,34 +593,15 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                onClick={() => updateDocumentFile(document.id, null)}
-                                                disabled={processing || !document.file}
-                                                className="text-red-600 border-red-200 hover:bg-red-50 w-full mt-1"
-                                            >
-                                                <Trash2 className="w-4 h-4 mr-1" />
-                                                Hapus File
-                                            </Button>
-                                        </div>
-                                        {/* )} */}
-
-                                    </div>
-
-                                    {/* Remove Document Button */}
-                                    {data.documents.length > 1 && (
-                                        <div className="flex justify-end pt-2 border-t border-gray-200 mt-4">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
                                                 onClick={() => removeDocument(document.id)}
-                                                disabled={processing}
-                                                className="text-red-600 border-red-200 bg-white hover:bg-red-50"
+                                                disabled={processing || data.documents.length === 1}
+                                                className="text-red-600 border-red-200 bg-white hover:bg-red-50 w-full mt-1"
                                             >
                                                 <Trash2 className="w-4 h-4 mr-1" />
                                                 Hapus Dokumen
                                             </Button>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             ))}
 

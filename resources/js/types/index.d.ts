@@ -57,6 +57,12 @@ export interface Role {
     updated_at?: string;
 }
 
+type DocumentItem = {
+    id: string;
+    name: string;
+    file: File | string | null;
+};
+
 export interface Activity {
     id?: number;
     type: 'ba' | 'da' | '';
@@ -87,4 +93,5 @@ export interface Activity {
     created_at?: string;
     updated_at?: string;
     slug: string;
+    documents: DocumentItem[];
 }
