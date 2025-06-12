@@ -48,6 +48,8 @@ class UserFactory extends Factory
                 ['name' => 'Super Admin', 'identity' => 'superadmin'],
                 ['name' => 'Admin', 'identity' => 'admin'],
                 ['name' => 'Kader', 'identity' => 'kader'],
+                ['name' => 'Lembaga', 'identity' => 'lembaga'],
+                ['name' => 'Instruktur', 'identity' => 'instruktur'],
             ];
 
             foreach ($roles as $roleData) {

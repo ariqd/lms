@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EyeIcon, Plus } from 'lucide-react';
 import { formatCurrency } from '@/utils/currency';
+import { transformStatus } from '@/utils/transformers';
+import ActivityStatusBadge from '@/components/activity-status-badge';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,18 +47,18 @@ export default function ActivityIndex({ title, activities }: PageProps) {
         },
         {
             accessorFn: (row) => {
-                const date = row.start_date;
+                const date = row.date_start;
                 return date ? new Date(date).toLocaleDateString('id-ID', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 }) : '-';
             },
-            id: "start_date",
+            id: "date_start",
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Tanggal Mulai" />
             ),
-            cell: ({ row }) => <div>{row.getValue("start_date")}</div>,
+            cell: ({ row }) => <div>{row.getValue("date_start")}</div>,
             meta: { displayName: "Tanggal Mulai" },
         },
         {
@@ -82,6 +84,17 @@ export default function ActivityIndex({ title, activities }: PageProps) {
             ),
             cell: ({ row }) => <div>{row.getValue("created_at")}</div>,
             meta: { displayName: "Tanggal Dibuat" },
+        },
+        {
+            accessorFn: (row) => {
+                return transformStatus(row.status);
+            },
+            id: "status",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} title="Status" />
+            ),
+            cell: ({ row }) => <ActivityStatusBadge status={row.getValue("status")} />,
+            meta: { displayName: "Status" },
         },
         {
             id: "actions",

@@ -13,13 +13,6 @@ import { LoaderCircle } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
 import { Badge } from '@/components/ui/badge';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Pengajuan Kegiatan BA / DA',
-        href: '/activities',
-    },
-];
-
 type ActivityForm = {
     type: 'ba' | 'da' | '';
     name: string;
@@ -43,7 +36,7 @@ type ActivityForm = {
     documents: string;
 };
 
-const ActivityCreate = ({ title, activity }: { title: string, activity?: Activity }) => {
+const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activity?: Activity, breadcrumbs: BreadcrumbItem[] }) => {
     const [documents, setDocuments] = useState<File[]>([]);
 
     const { data, setData, post, processing, errors } = useForm<ActivityForm>({

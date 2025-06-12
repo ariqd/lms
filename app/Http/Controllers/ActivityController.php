@@ -25,7 +25,20 @@ class ActivityController extends Controller
      */
     public function create()
     {
-        return Inertia::render('lembaga/activity/form');
+        return Inertia::render('lembaga/activity/form', [
+            'title' => 'Buat Pengajuan Kegiatan',
+            'breadcrumbs' => [
+                [
+                    'title' => 'Pengajuan Kegiatan BA / DA',
+                    'href' => route('lembaga.pelatihan.index'),
+                ],
+                [
+                    'title' => 'Buat Pengajuan Kegiatan',
+                    'href' => route('lembaga.pelatihan.create')
+                ]
+            ],
+            'description' => 'Lengkapi formulir pengajuan pelatihan'
+        ]);
     }
 
     /**

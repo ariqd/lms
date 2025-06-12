@@ -63,8 +63,11 @@ export interface Activity {
     name: string;
     description: string;
     goals: string;
-    start_date: string;
-    end_date: string;
+    date_start: string;
+    date_end: string;
+    time_start: string;
+    time_end: string;
+    registration_deadline: string;
     participant_count: number;
     location: string;
     total_budget: number;
@@ -75,7 +78,10 @@ export interface Activity {
     contact_phone: string;
     contact_email: string;
     notes: string;
-    is_approved: boolean;
+    is_active: boolean;
+    status: string;
+    invoice_file: string;
+    payment_proof_file: string;
     user_id: number;
     user: User;
     created_at?: string;
