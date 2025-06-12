@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\ActivityFile;
+use App\Http\Requests\StoreActivityRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+// use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ActivityController extends Controller
@@ -16,7 +19,7 @@ class ActivityController extends Controller
     {
         return Inertia::render('lembaga/activity/index', [
             'title' => 'Pengajuan Kegiatan BA / DA',
-            'activities' => Activity::where('user_id', Auth::user()->id)->get()
+            'activities' => Activity::where('user_id', Auth::user()->id)->with('files')->get()
         ]);
     }
 
@@ -44,48 +47,54 @@ class ActivityController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreActivityRequest $request)
     {
-        $request->validate([
-            'type' => 'required|in:ba,da',
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'goals' => 'required|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'participant_count' => 'required|integer',
-            'location' => 'required|string',
-            'daily_schedule' => 'required|string',
-            'total_budget' => 'required|numeric',
-            'additional_needs' => 'required|string',
-            'additional_equipments' => 'required|string',
-            'contact_name' => 'required|string|max:255',
-            'contact_phone' => 'required|string|max:20',
-            'contact_email' => 'required|email|max:255',
-            'notes' => 'nullable|string',
+        $validated = $request->safe()->only([
+            'type',
+            'name',
+            'description',
+            'goals',
+            'date_start',
+            'date_end',
+            'time_start',
+            'time_end',
+            'registration_deadline',
+            'participant_count',
+            'location',
+            'daily_schedule',
+            'total_budget',
+            'additional_needs',
+            'additional_equipments',
+            'contact_name',
+            'contact_phone',
+            'contact_email',
+            'notes',
+            'documents',
         ]);
 
         $activity = Activity::create([
             'user_id' => Auth::user()->id,
-            'type' => $request->type,
-            'name' => $request->name,
-            'description' => $request->description,
-            'goals' => $request->goals,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'participant_count' => $request->participant_count,
-            'location' => $request->location,
-            'daily_schedule' => $request->daily_schedule,
-            'total_budget' => $request->total_budget,
-            'additional_needs' => $request->additional_needs,
-            'additional_equipments' => $request->additional_equipments,
-            'contact_name' => $request->contact_name,
-            'contact_phone' => $request->contact_phone,
-            'contact_email' => $request->contact_email,
-            'notes' => $request->notes,
+            'slug' => \Str::slug($validated['name'] . '-' . time()),
+            ...$validated,
         ]);
 
-        return redirect()->route('lembaga.pelatihan.index')->with('success', "Kegiatan {$request->name} berhasil dibuat");
+        if ($validated['documents'] && is_array($validated['documents'])) {
+            foreach ($validated['documents'] as $document) {
+                if (isset($document['file']) && isset($document['name'])) {
+                    $file = $document['file'];
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $filePath = $file->storeAs('activity-documents', $filename, 'public');
+
+                    $activityFile = ActivityFile::create([
+                        'activity_id' => $activity->id,
+                        'name' => $document['name'],
+                        'file' => $filePath,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('lembaga.pelatihan.index')->with('success', "Kegiatan {$validated['name']} berhasil dibuat");
     }
 
     /**
@@ -95,7 +104,7 @@ class ActivityController extends Controller
     {
         return Inertia::render('lembaga/activity/form', [
             'title' => 'Detail Kegiatan',
-            'activity' => $activity
+            'activity' => $activity->load('files')
         ]);
     }
 

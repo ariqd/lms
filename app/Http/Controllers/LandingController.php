@@ -9,7 +9,7 @@ class LandingController extends Controller
 {
     public function index()
     {
-        $activities = Activity::where('is_approved', true)->get();
+        $activities = Activity::where('status', 'approved')->get();
 
         return Inertia::render('welcome', [
             'activities' => $activities

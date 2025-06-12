@@ -10,10 +10,14 @@ class Activity extends Model
         'user_id',
         'type',
         'name',
+        'slug',
         'description',
         'goals',
-        'start_date',
-        'end_date',
+        'date_start',
+        'date_end',
+        'time_start',
+        'time_end',
+        'registration_deadline',
         'participant_count',
         'location',
         'daily_schedule',
@@ -24,11 +28,19 @@ class Activity extends Model
         'contact_phone',
         'contact_email',
         'notes',
-        'is_approved',
+        'is_active',
+        'status',
+        'invoice_file',
+        'payment_proof_file',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(ActivityFile::class);
     }
 }

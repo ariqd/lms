@@ -2,26 +2,35 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
 import { Activity, BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
-import { LoaderCircle } from 'lucide-react';
+import { CalendarIcon, LoaderCircle, Trash2, Plus } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
-import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
+
+type DocumentItem = {
+    id: string;
+    name: string;
+    file: File | null;
+};
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
     name: string;
     description: string;
     goals: string;
-    start_date: string;
-    end_date: string;
-    start_time: string;
-    end_time: string;
+    date_start: string;
+    date_end: string;
+    time_start: string;
+    time_end: string;
     participant_count: string;
     location: string;
     daily_schedule: string;
@@ -33,19 +42,30 @@ type ActivityForm = {
     contact_email: string;
     notes: string;
     registration_deadline: string;
-    documents: string;
+    documents: DocumentItem[];
 };
 
-const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activity?: Activity, breadcrumbs: BreadcrumbItem[] }) => {
-    const [documents, setDocuments] = useState<File[]>([]);
+type PageProps = {
+    title: string;
+    activity?: Activity;
+    breadcrumbs: BreadcrumbItem[];
+    description: string;
+}
+
+const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps) => {
+    // const [documents, setDocuments] = useState<DocumentItem[]>([
+    //     { id: Date.now().toString(), name: '', file: null }
+    // ]);
 
     const { data, setData, post, processing, errors } = useForm<ActivityForm>({
         type: '',
         name: '',
         description: '',
         goals: '',
-        start_date: '',
-        end_date: '',
+        date_start: '',
+        date_end: '',
+        time_start: '',
+        time_end: '',
         participant_count: '',
         location: '',
         daily_schedule: '',
@@ -57,14 +77,76 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
         contact_email: '',
         notes: '',
         registration_deadline: '',
-        start_time: '',
-        end_time: '',
-        documents: '',
+        documents: [
+            { id: Date.now().toString(), name: '', file: null }
+        ],
     });
+
+    const addDocument = () => {
+        // setDocuments([...documents, { id: Date.now().toString(), name: '', file: null }]);
+        setData('documents', [...data.documents, { id: Date.now().toString(), name: '', file: null }]);
+    };
+
+    const removeDocument = (id: string) => {
+        if (data.documents.length > 1) {
+            // setDocuments(documents.filter(doc => doc.id !== id));
+            setData('documents', data.documents.filter(doc => doc.id !== id));
+        }
+    };
+
+    const updateDocumentName = (id: string, name: string) => {
+        // setDocuments(documents.map(doc =>
+        //     doc.id === id ? { ...doc, name } : doc
+        // ));
+        setData('documents', data.documents.map(doc =>
+            doc.id === id ? { ...doc, name } : doc
+        ));
+    };
+
+    const updateDocumentFile = (id: string, file: File | null) => {
+        // setDocuments(documents.map(doc =>
+        //     doc.id === id ? { ...doc, file } : doc
+        // ));
+        setData('documents', data.documents.map(doc =>
+            doc.id === id ? { ...doc, file } : doc
+        ));
+    };
+
+    const isValidFileType = (file: File) => {
+        const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
+        return allowedTypes.includes(file.type);
+    };
+
+    const formatFileSize = (bytes: number) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+
+        // Prepare documents for submission
+        // const validDocuments = documents
+        //     .filter(doc => doc.name.trim() && doc.file)
+        //     .map(doc => ({ name: doc.name, file: doc.file }));
+
+        // console.log('validDocuments', validDocuments);
+
+        // Set documents in form data
+        // setData({
+        //     ...data,
+        //     documents: data.documents.filter(doc => doc.name.trim() && doc.file)
+        // });
+
+        // console.log('form data', data);
+
+        // // Submit the form
+        // setTimeout(() => {
         post(route('lembaga.pelatihan.store'));
+        // }, 100);
     };
 
     return (
@@ -72,7 +154,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
             <Head title={title} />
             <div className="px-4 py-6">
                 <div className="flex items-center justify-between mb-6">
-                    <Heading title={title} description="Lengkapi formulir pengajuan pelatihan" />
+                    <Heading title={title} description={description} />
                 </div>
 
                 <form onSubmit={submit} className="space-y-8">
@@ -86,34 +168,35 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                         </div>
 
                         <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="type">Program Pelatihan *</Label>
-                                <Select value={data.type} onValueChange={(value: 'ba' | 'da') => setData('type', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih program pelatihan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ba">Baitul Arqam (BA)</SelectItem>
-                                        <SelectItem value="da">Darul Arqam (DA)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.type} />
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="type">Program Pelatihan</Label>
+                                    <Select value={data.type} onValueChange={(value: 'ba' | 'da') => setData('type', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih program pelatihan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ba">Baitul Arqam (BA)</SelectItem>
+                                            <SelectItem value="da">Darul Arqam (DA)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.type} />
+                                </div>
+                                <div className="grid gap-2 col-span-3">
+                                    <Label htmlFor="name">Judul Pelatihan</Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        placeholder="Masukkan judul pelatihan"
+                                        disabled={processing}
+                                    />
+                                    <InputError message={errors.name} />
+                                </div>
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Judul Pelatihan *</Label>
-                                <Input
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    placeholder="Masukkan judul pelatihan"
-                                    disabled={processing}
-                                />
-                                <InputError message={errors.name} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="description">Deskripsi Program *</Label>
+                                <Label htmlFor="description">Deskripsi Program</Label>
                                 <Textarea
                                     id="description"
                                     value={data.description}
@@ -126,7 +209,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="goals">Tujuan Pelatihan *</Label>
+                                <Label htmlFor="goals">Tujuan Pelatihan</Label>
                                 <Textarea
                                     id="goals"
                                     value={data.goals}
@@ -151,69 +234,140 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                         <div className="grid gap-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="start_date">Tanggal Mulai *</Label>
-                                    <Input
-                                        id="start_date"
-                                        type="date"
-                                        value={data.start_date}
-                                        onChange={(e) => setData('start_date', e.target.value)}
-                                        disabled={processing}
-                                    />
-                                    <InputError message={errors.start_date} />
+                                    <Label htmlFor="date_start">Tanggal Mulai</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                data-empty={!data.date_start}
+                                                className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal"
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {data.date_start ? format(new Date(data.date_start + 'T00:00:00'), "PPP", { locale: id }) : <span>Pilih tanggal</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                locale={id}
+                                                selected={data.date_start ? new Date(data.date_start + 'T00:00:00') : undefined}
+                                                onSelect={(date) => {
+                                                    if (date) {
+                                                        const year = date.getFullYear();
+                                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                        const day = String(date.getDate()).padStart(2, '0');
+                                                        setData('date_start', `${year}-${month}-${day}`);
+                                                    }
+                                                }}
+                                                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <InputError message={errors.date_start} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="end_date">Tanggal Selesai *</Label>
-                                    <Input
-                                        id="end_date"
-                                        type="date"
-                                        value={data.end_date}
-                                        onChange={(e) => setData('end_date', e.target.value)}
-                                        disabled={processing}
-                                    />
-                                    <InputError message={errors.end_date} />
+                                    <Label htmlFor="date_end">Tanggal Selesai</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                data-empty={!data.date_end}
+                                                className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal"
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {data.date_end ? format(new Date(data.date_end + 'T00:00:00'), "PPP", { locale: id }) : <span>Pilih tanggal</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                locale={id}
+                                                selected={data.date_end ? new Date(data.date_end + 'T00:00:00') : undefined}
+                                                onSelect={(date) => {
+                                                    if (date) {
+                                                        const year = date.getFullYear();
+                                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                        const day = String(date.getDate()).padStart(2, '0');
+                                                        setData('date_end', `${year}-${month}-${day}`);
+                                                    }
+                                                }}
+                                                disabled={(date) => {
+                                                    const today = new Date(new Date().setHours(0, 0, 0, 0));
+                                                    const startDate = data.date_start ? new Date(data.date_start + 'T00:00:00') : null;
+                                                    return date < today || (startDate ? date < startDate : false);
+                                                }}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <InputError message={errors.date_end} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="participant_count">Deadline Pendaftaran *</Label>
-                                    <Input
-                                        id="registration_deadline"
-                                        type="date"
-                                        value={data.registration_deadline}
-                                        onChange={(e) => setData('registration_deadline', e.target.value)}
-                                        disabled={processing}
-                                    />
+                                    <Label htmlFor="registration_deadline">Deadline Pendaftaran</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                data-empty={!data.registration_deadline}
+                                                className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal"
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {data.registration_deadline ? format(new Date(data.registration_deadline + 'T00:00:00'), "PPP", { locale: id }) : <span>Pilih tanggal</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                locale={id}
+                                                selected={data.registration_deadline ? new Date(data.registration_deadline + 'T00:00:00') : undefined}
+                                                onSelect={(date) => {
+                                                    if (date) {
+                                                        const year = date.getFullYear();
+                                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                        const day = String(date.getDate()).padStart(2, '0');
+                                                        setData('registration_deadline', `${year}-${month}-${day}`);
+                                                    }
+                                                }}
+                                                disabled={(date) => {
+                                                    const today = new Date(new Date().setHours(0, 0, 0, 0));
+                                                    const startDate = data.date_start ? new Date(data.date_start + 'T00:00:00') : null;
+                                                    return date < today || (startDate ? date >= startDate : false);
+                                                }}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                     <InputError message={errors.registration_deadline} />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="start_time">Waktu Mulai *</Label>
+                                    <Label htmlFor="time_start">Waktu Mulai</Label>
                                     <Input
-                                        id="start_time"
+                                        id="time_start"
                                         type="time"
-                                        value={data.start_time}
-                                        onChange={(e) => setData('start_time', e.target.value)}
+                                        value={data.time_start}
+                                        onChange={(e) => setData('time_start', e.target.value)}
                                         disabled={processing}
                                     />
-                                    <InputError message={errors.start_time} />
+                                    <InputError message={errors.time_start} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="end_time">Waktu Selesai *</Label>
+                                    <Label htmlFor="time_end">Waktu Selesai</Label>
                                     <Input
-                                        id="end_time"
+                                        id="time_end"
                                         type="time"
-                                        value={data.end_time}
-                                        onChange={(e) => setData('end_time', e.target.value)}
+                                        value={data.time_end}
+                                        onChange={(e) => setData('time_end', e.target.value)}
                                         disabled={processing}
                                     />
-                                    <InputError message={errors.end_time} />
+                                    <InputError message={errors.time_end} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="participant_count">Jumlah Peserta *</Label>
+                                    <Label htmlFor="participant_count">Jumlah Peserta</Label>
                                     <Input
                                         id="participant_count"
                                         type="number"
@@ -227,19 +381,25 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="location">Lokasi/Venue Pelatihan *</Label>
+                                <Label htmlFor="location">Lokasi/Venue Pelatihan</Label>
                                 <Textarea
                                     id="location"
                                     value={data.location}
                                     onChange={(e) => setData('location', e.target.value)}
                                     placeholder="Nama tempat, alamat lengkap"
                                     disabled={processing}
+                                    maxLength={255}
                                 />
-                                <InputError message={errors.location} />
+                                <div className="flex justify-between items-center">
+                                    <InputError message={errors.location} />
+                                    <span className="text-xs text-gray-500">
+                                        {data.location.length}/255 karakter
+                                    </span>
+                                </div>
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="daily_schedule">Jadwal Harian *</Label>
+                                <Label htmlFor="daily_schedule">Jadwal Harian</Label>
                                 <Textarea
                                     id="daily_schedule"
                                     value={data.daily_schedule}
@@ -264,7 +424,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
 
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="total_budget">Total Anggaran *</Label>
+                                <Label htmlFor="total_budget">Total Anggaran</Label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">Rp</span>
                                     <Input
@@ -284,7 +444,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                             </div>
 
                             <div className="grid gap-4">
-                                <Label htmlFor="additional_needs">Kebutuhan Tambahan *</Label>
+                                <Label htmlFor="additional_needs">Kebutuhan Tambahan</Label>
                                 <Textarea
                                     id="additional_needs"
                                     value={data.additional_needs}
@@ -297,7 +457,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan *</Label>
+                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan</Label>
                                 <Textarea
                                     id="additional_equipments"
                                     value={data.additional_equipments}
@@ -323,7 +483,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                         <div className="grid gap-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="contact_name">Nama Penanggung Jawab *</Label>
+                                    <Label htmlFor="contact_name">Nama Penanggung Jawab</Label>
                                     <Input
                                         id="contact_name"
                                         value={data.contact_name}
@@ -335,7 +495,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="contact_phone">Nomor Telepon *</Label>
+                                    <Label htmlFor="contact_phone">Nomor Telepon</Label>
                                     <Input
                                         id="contact_phone"
                                         type="tel"
@@ -348,7 +508,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="contact_email">Email *</Label>
+                                    <Label htmlFor="contact_email">Email</Label>
                                     <Input
                                         id="contact_email"
                                         type="email"
@@ -372,28 +532,114 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
                             <h3 className="text-lg font-semibold">Dokumen Penunjang</h3>
                         </div>
 
-                        {/* Multiple File Upload with Add button */}
-                        <div className="grid gap-2">
-                            <div className="grid grid-cols-12 gap-2">
-                                <Input type="text" id="documents" value={data.documents} onChange={(e) => setData('documents', e.target.value)} placeholder="Masukkan nama dokumen" disabled={processing} className='col-span-5' />
-                                <Input type="file" id="documents" multiple disabled={processing} className='cursor-pointer col-span-5' />
-                                <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2' onClick={() => setDocuments([...documents, new File([], 'new-document.pdf')])}>
-                                    Tambah Dokumen
-                                </Button>
-                            </div>
-                            <InputError message={errors.documents} />
-                        </div>
-                        {documents.map((document, index) => (
-                            <div className="grid gap-2 mt-5">
-                                <div className="grid grid-cols-12 gap-2">
-                                    <Input type="text" id="documents" value={data.documents} onChange={(e) => setData('documents', e.target.value)} placeholder="Masukkan nama dokumen" disabled={processing} className='col-span-5' />
-                                    <Input type="file" id="documents" multiple disabled={processing} className='cursor-pointer col-span-5' />
-                                    <Button type="button" variant="default" disabled={processing} className='bg-red-600 hover:bg-red-700 col-span-2' onClick={() => setDocuments(documents.filter((_, i) => i !== index))}>
-                                        Hapus Dokumen
-                                    </Button>
+                        <div className="space-y-4">
+                            <p className="text-sm text-gray-600">
+                                Upload dokumen pendukung seperti detail pelatihan, RAB, surat rekomendasi, dll.
+                                <br />
+                                <span className="font-medium">Format yang didukung: PDF, PNG, JPG, JPEG (Maksimal 10MB per file)</span>
+                            </p>
+
+                            {data.documents.map((document) => (
+                                <div key={document.id} className="border rounded-lg p-4 bg-gray-50">
+                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                                        <div className="md:col-span-4">
+                                            <Label htmlFor={`doc-name-${document.id}`} className="text-sm font-medium">
+                                                Nama Dokumen
+                                            </Label>
+                                            <Input
+                                                id={`doc-name-${document.id}`}
+                                                type="text"
+                                                value={document.name}
+                                                onChange={(e) => updateDocumentName(document.id, e.target.value)}
+                                                placeholder="Contoh: Proposal Kegiatan"
+                                                disabled={processing}
+                                                className="mt-1"
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-6">
+                                            <Label htmlFor={`doc-file-${document.id}`} className="text-sm font-medium">
+                                                File Dokumen {document.file && (
+                                                    <span className="text-xs text-gray-600 mt-1">
+                                                        - {document.file.name} ({formatFileSize(document.file.size)})
+                                                    </span>
+                                                )}
+                                            </Label>
+                                            <Input
+                                                id={`doc-file-${document.id}`}
+                                                type="file"
+                                                accept=".pdf,.png,.jpg,.jpeg"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0] || null;
+                                                    if (file && !isValidFileType(file)) {
+                                                        alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
+                                                        e.target.value = '';
+                                                        return;
+                                                    }
+                                                    if (file && file.size > 10 * 1024 * 1024) {
+                                                        alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                                                        e.target.value = '';
+                                                        return;
+                                                    }
+                                                    updateDocumentFile(document.id, file);
+                                                }}
+                                                disabled={processing}
+                                                className="mt-1 cursor-pointer"
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2 flex items-end">
+                                            {data.documents.length > 1 && (
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => removeDocument(document.id)}
+                                                    disabled={processing}
+                                                    className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
+                            ))}
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={addDocument}
+                                disabled={processing}
+                                className="w-full border-dashed border-blue-300 text-blue-600 hover:bg-blue-50"
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Tambah Dokumen
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Catatan Tambahan */}
+                    <div className="bg-white rounded-lg border p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center">
+                                <span className="text-gray-600 text-sm font-medium">📝</span>
                             </div>
-                        ))}
+                            <h3 className="text-lg font-semibold">Catatan Tambahan</h3>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="notes">Catatan atau Informasi Tambahan (Opsional)</Label>
+                            <Textarea
+                                id="notes"
+                                value={data.notes}
+                                onChange={(e) => setData('notes', e.target.value)}
+                                placeholder="Informasi tambahan yang perlu disampaikan..."
+                                className="min-h-[100px]"
+                                disabled={processing}
+                            />
+                            <InputError message={errors.notes} />
+                        </div>
                     </div>
 
                     {/* If see detail, show invoice section */}
@@ -490,3 +736,4 @@ const ActivityCreate = ({ title, activity, breadcrumbs }: { title: string, activ
 }
 
 export default ActivityCreate
+
