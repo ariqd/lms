@@ -85,7 +85,7 @@ class ActivityController extends Controller
                     $filename = time() . '_' . $file->getClientOriginalName();
                     $filePath = $file->storeAs('activity-documents', $filename, 'public');
 
-                    $activityFile = ActivityFile::create([
+                    ActivityFile::create([
                         'activity_id' => $activity->id,
                         'name' => $document['name'],
                         'file' => $filePath,
