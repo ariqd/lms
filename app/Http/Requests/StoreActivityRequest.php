@@ -42,6 +42,8 @@ class StoreActivityRequest extends FormRequest
             'contact_email' => 'required|email|max:255',
             'notes' => 'nullable|string',
             'documents' => 'nullable|array',
+            'documents.*.name' => 'nullable|string|max:255',
+            'documents.*.file' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:10240', // 10MB max
         ];
     }
 

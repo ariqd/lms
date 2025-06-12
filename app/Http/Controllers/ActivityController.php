@@ -102,9 +102,22 @@ class ActivityController extends Controller
      */
     public function show(string $slug)
     {
+        $activity = Activity::where('slug', $slug)->with('files')->firstOrFail();
+
         return Inertia::render('lembaga/activity/form', [
-            'title' => 'Detail Kegiatan',
-            'activity' => Activity::where('slug', $slug)->with('files')->firstOrFail()
+            'title' => 'Detail Kegiatan ' . $activity->name,
+            'breadcrumbs' => [
+                [
+                    'title' => 'Pengajuan Kegiatan BA / DA',
+                    'href' => route('lembaga.pelatihan.index'),
+                ],
+                [
+                    'title' => 'Detail Kegiatan ' . $activity->name,
+                    'href' => route('lembaga.pelatihan.show', $slug)
+                ]
+            ],
+            'description' => 'Lihat atau edit detail kegiatan',
+            'activity' => $activity
         ]);
     }
 

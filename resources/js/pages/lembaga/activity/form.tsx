@@ -1,7 +1,7 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
 import { Activity, BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import { id } from 'date-fns/locale';
 type DocumentItem = {
     id: string;
     name: string;
-    file: File | null;
+    file: File | string | null;
 };
 
 type ActivityForm = {
@@ -111,6 +111,18 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    const getFileName = (file: File | string | null) => {
+        if (!file) return '';
+
+        if (file instanceof File) {
+            return file.name;
+        }
+
+        // If it's a string (path), extract just the filename
+        const pathParts = file.split(/[/\\]/); // Split by both forward and backward slashes
+        return pathParts[pathParts.length - 1]; // Get the last part (filename)
     };
 
     const submit: FormEventHandler = (e) => {
@@ -505,18 +517,24 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                         </div>
 
                         <div className="space-y-4">
-                            <p className="text-sm text-gray-600">
-                                Upload dokumen pendukung seperti detail pelatihan, RAB, surat rekomendasi, dll.
-                                <br />
-                                <span className="font-medium">Format yang didukung: PDF, PNG, JPG, JPEG (Maksimal 10MB per file)</span>
-                            </p>
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p className="text-sm text-blue-800">
+                                    <span className="font-medium">📋 Petunjuk Upload Dokumen:</span>
+                                </p>
+                                <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
+                                    <li>Upload dokumen pendukung seperti detail pelatihan, RAB, surat rekomendasi, dll.</li>
+                                    <li>Format yang didukung: <span className="font-medium">PDF, PNG, JPG, JPEG</span></li>
+                                    <li>Ukuran maksimal: <span className="font-medium">10MB per file</span></li>
+                                </ul>
+                            </div>
 
-                            {data.documents.map((document) => (
+                            {data.documents.map((document, index) => (
                                 <div key={document.id} className="border rounded-lg p-4 bg-gray-50">
-                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                                        <div className="md:col-span-4">
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {/* Document Name Input */}
+                                        <div>
                                             <Label htmlFor={`doc-name-${document.id}`} className="text-sm font-medium">
-                                                Nama Dokumen
+                                                Nama Dokumen #{index + 1}
                                             </Label>
                                             <Input
                                                 id={`doc-name-${document.id}`}
@@ -525,56 +543,83 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                                                 onChange={(e) => updateDocumentName(document.id, e.target.value)}
                                                 placeholder="Contoh: Proposal Kegiatan"
                                                 disabled={processing}
-                                                className="mt-1"
+                                                className="mt-1 bg-white"
                                             />
                                         </div>
 
-                                        <div className="md:col-span-6">
-                                            <Label htmlFor={`doc-file-${document.id}`} className="text-sm font-medium">
-                                                File Dokumen {document.file && (
-                                                    <span className="text-xs text-gray-600 mt-1">
-                                                        - {document.file.name} ({formatFileSize(document.file.size)})
-                                                    </span>
-                                                )}
+                                        {/* File Upload Area */}
+                                        <div>
+                                            <Label className="text-sm font-medium">
+                                                {document.file ? 'Ganti' : 'Upload'} File Dokumen
                                             </Label>
-                                            <Input
-                                                id={`doc-file-${document.id}`}
-                                                type="file"
-                                                accept=".pdf,.png,.jpg,.jpeg"
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0] || null;
-                                                    if (file && !isValidFileType(file)) {
-                                                        alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
-                                                        e.target.value = '';
-                                                        return;
-                                                    }
-                                                    if (file && file.size > 10 * 1024 * 1024) {
-                                                        alert('Ukuran file terlalu besar. Maksimal 10MB.');
-                                                        e.target.value = '';
-                                                        return;
-                                                    }
-                                                    updateDocumentFile(document.id, file);
-                                                }}
-                                                disabled={processing}
-                                                className="mt-1 cursor-pointer"
-                                            />
+                                            <div className="mt-1">
+                                                <Input
+                                                    id={`doc-file-${document.id}`}
+                                                    type="file"
+                                                    accept=".pdf,.png,.jpg,.jpeg"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0] || null;
+                                                        if (file && !isValidFileType(file)) {
+                                                            alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
+                                                            e.target.value = '';
+                                                            return;
+                                                        }
+                                                        if (file && file.size > 10 * 1024 * 1024) {
+                                                            alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                                                            e.target.value = '';
+                                                            return;
+                                                        }
+                                                        updateDocumentFile(document.id, file);
+                                                    }}
+                                                    disabled={processing}
+                                                    className="cursor-pointer col-span-8 bg-white"
+                                                />
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Format: PDF, PNG, JPG, JPEG (Max: 10MB)
+                                            </p>
                                         </div>
 
-                                        <div className="md:col-span-2 flex items-end">
-                                            {data.documents.length > 1 && (
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => removeDocument(document.id)}
-                                                    disabled={processing}
-                                                    className="w-full text-red-600 border-red-200 hover:bg-red-50"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            )}
+                                        {/* {document.file && ( */}
+                                        <div>
+                                            <Label className="text-sm ml-2">
+                                                File Dokumen:
+                                                <span className="text-green-600 ml-1">
+                                                    {getFileName(document.file) || '-'}
+                                                    {document.file instanceof File && ` (${formatFileSize(document.file.size)})`}
+                                                </span>
+                                            </Label>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => updateDocumentFile(document.id, null)}
+                                                disabled={processing || !document.file}
+                                                className="text-red-600 border-red-200 hover:bg-red-50 w-full mt-1"
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-1" />
+                                                Hapus File
+                                            </Button>
                                         </div>
+                                        {/* )} */}
+
                                     </div>
+
+                                    {/* Remove Document Button */}
+                                    {data.documents.length > 1 && (
+                                        <div className="flex justify-end pt-2 border-t border-gray-200 mt-4">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => removeDocument(document.id)}
+                                                disabled={processing}
+                                                className="text-red-600 border-red-200 bg-white hover:bg-red-50"
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-1" />
+                                                Hapus Dokumen
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
 
@@ -614,91 +659,103 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                         </div>
                     </div>
 
-                    {/* If see detail, show invoice section */}
                     {
                         activity && (
                             <div className="bg-white rounded-lg border p-6">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
+                                    <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
                                         <span className="text-red-600 text-sm font-medium">📄</span>
                                     </div>
                                     <h3 className="text-lg font-semibold">Invoice</h3>
                                 </div>
 
-                                <div className="border rounded-lg p-4 bg-gray-50">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-3">
-                                            <div>
-                                                <p className="font-medium text-gray-900">Nama Invoice</p>
-                                                <p className="text-sm text-gray-500">invoice.pdf • 100 KB</p>
-                                            </div>
-                                        </div>
-                                        {/* <Badge variant="outline">Uploaded</Badge> */}
-                                        <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
-                                            Download Invoice
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-2 mt-5">
-                                    <label htmlFor="bukti_pembayaran" className='text-sm font-medium text-gray-900'>Upload Bukti Pembayaran</label>
-                                    <div className="grid grid-cols-12 gap-2">
-                                        <Input
-                                            type="file"
-                                            accept=".pdf,.png,.jpg,.jpeg"
-                                            disabled={processing}
-                                            className='cursor-pointer col-span-5'
-                                        />
-                                        <Input
-                                            type="text"
-                                            placeholder="Catatan (opsional)"
-                                            disabled={processing}
-                                            className='col-span-5'
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="default"
-                                            disabled={processing}
-                                            className='bg-blue-600 hover:bg-blue-700 col-span-2'
-                                        >
-                                            Upload Bukti Pembayaran
-                                        </Button>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Supports: PDF, PNG, JPG, JPEG (Max: 10MB)
-                                    </p>
-                                </div>
-
-                                <div className="border rounded-lg p-4 bg-gray-50 mt-5">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-3">
-                                            <div className='space-y-1'>
-                                                <p className="font-medium text-gray-900">Bukti Pembayaran</p>
-                                                <p className="text-sm text-gray-500">bukti-pembayaran.pdf • 100 KB</p>
-                                                <div className="text-xs text-gray-500 mt-4">
-                                                    <div className="font-medium text-gray-900">Catatan:</div>
-                                                    <div className="text-gray-500">Bukti pembayaran kegiatan</div>
+                                {
+                                    activity.invoice_file ?
+                                        <>
+                                            <div className="border rounded-lg p-4 bg-gray-50">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div>
+                                                            <p className="font-medium text-gray-900">Nama Invoice</p>
+                                                            <p className="text-sm text-gray-500">invoice.pdf • 100 KB</p>
+                                                        </div>
+                                                    </div>
+                                                    {/* <Badge variant="outline">Uploaded</Badge> */}
+                                                    <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
+                                                        Download Invoice
+                                                    </Button>
                                                 </div>
                                             </div>
+                                            <div className="grid gap-2 mt-5">
+                                                <label htmlFor="bukti_pembayaran" className='text-sm font-medium text-gray-900'>Upload Bukti Pembayaran</label>
+                                                <div className="grid grid-cols-12 gap-2">
+                                                    <Input
+                                                        type="file"
+                                                        accept=".pdf,.png,.jpg,.jpeg"
+                                                        disabled={processing}
+                                                        className='cursor-pointer col-span-5'
+                                                    />
+                                                    <Input
+                                                        type="text"
+                                                        placeholder="Catatan (opsional)"
+                                                        disabled={processing}
+                                                        className='col-span-5'
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="default"
+                                                        disabled={processing}
+                                                        className='bg-blue-600 hover:bg-blue-700 col-span-2'
+                                                    >
+                                                        Upload Bukti Pembayaran
+                                                    </Button>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Supports: PDF, PNG, JPG, JPEG (Max: 10MB)
+                                                </p>
+                                            </div>
+
+                                            <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className='space-y-1'>
+                                                            <p className="font-medium text-gray-900">Bukti Pembayaran</p>
+                                                            <p className="text-sm text-gray-500">bukti-pembayaran.pdf • 100 KB</p>
+                                                            <div className="text-xs text-gray-500 mt-4">
+                                                                <div className="font-medium text-gray-900">Catatan:</div>
+                                                                <div className="text-gray-500">Bukti pembayaran kegiatan</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {/* <Badge variant="outline">Uploaded</Badge> */}
+                                                    <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
+                                                        Download Bukti Pembayaran
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </> :
+                                        <div className="border rounded-lg p-4 bg-gray-50">
+                                            <p className="text-sm text-gray-500">Admin belum mengupload Invoice</p>
                                         </div>
-                                        {/* <Badge variant="outline">Uploaded</Badge> */}
-                                        <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
-                                            Download Bukti Pembayaran
-                                        </Button>
-                                    </div>
-                                </div>
+                                }
                             </div>
                         )
                     }
 
                     {/* Submit Buttons */}
                     <div className="flex justify-between gap-3 pt-6 border-t">
-                        <Button type="button" variant="outline" disabled={processing}>
-                            Batal
+                        <Button asChild variant="outline" disabled={processing}>
+                            <Link href={route('lembaga.pelatihan.index')}>
+                                Kembali
+                            </Link>
                         </Button>
                         <Button type="submit" disabled={processing}>
                             {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
-                            Kirim Proposal
+                            {
+                                activity ?
+                                    'Simpan Perubahan' :
+                                    'Kirim Proposal'
+                            }
                         </Button>
                     </div>
                 </form>
