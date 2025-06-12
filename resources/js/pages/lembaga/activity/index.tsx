@@ -102,7 +102,7 @@ export default function ActivityIndex({ title, activities }: PageProps) {
             cell: ({ row }) => {
                 return <div>
                     <Button asChild>
-                        <Link href={route('lembaga.pelatihan.show', row.original.id)}>
+                        <Link href={route('lembaga.pelatihan.show', row.original.slug)}>
                             <EyeIcon className="w-4 h-4" />
                             <span>Detail</span>
                         </Link>

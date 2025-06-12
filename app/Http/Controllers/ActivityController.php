@@ -100,11 +100,11 @@ class ActivityController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Activity $activity)
+    public function show(string $slug)
     {
         return Inertia::render('lembaga/activity/form', [
             'title' => 'Detail Kegiatan',
-            'activity' => $activity->load('files')
+            'activity' => Activity::where('slug', $slug)->with('files')->firstOrFail()
         ]);
     }
 

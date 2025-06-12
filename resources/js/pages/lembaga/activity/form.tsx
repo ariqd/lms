@@ -53,60 +53,48 @@ type PageProps = {
 }
 
 const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps) => {
-    // const [documents, setDocuments] = useState<DocumentItem[]>([
-    //     { id: Date.now().toString(), name: '', file: null }
-    // ]);
-
-    const { data, setData, post, processing, errors } = useForm<ActivityForm>({
-        type: '',
-        name: '',
-        description: '',
-        goals: '',
-        date_start: '',
-        date_end: '',
-        time_start: '',
-        time_end: '',
-        participant_count: '',
-        location: '',
-        daily_schedule: '',
-        total_budget: '0',
-        additional_needs: '',
-        additional_equipments: '',
-        contact_name: '',
-        contact_phone: '',
-        contact_email: '',
-        notes: '',
-        registration_deadline: '',
-        documents: [
+    const { data, setData, post, processing, errors } = useForm({
+        type: activity?.type || '',
+        name: activity?.name || '',
+        description: activity?.description || '',
+        goals: activity?.goals || '',
+        date_start: activity?.date_start || '',
+        date_end: activity?.date_end || '',
+        time_start: activity?.time_start || '',
+        time_end: activity?.time_end || '',
+        participant_count: activity?.participant_count || '',
+        location: activity?.location || '',
+        daily_schedule: activity?.daily_schedule || '',
+        total_budget: activity?.total_budget || '0',
+        additional_needs: activity?.additional_needs || '',
+        additional_equipments: activity?.additional_equipments || '',
+        contact_name: activity?.contact_name || '',
+        contact_phone: activity?.contact_phone || '',
+        contact_email: activity?.contact_email || '',
+        notes: activity?.notes || '',
+        registration_deadline: activity?.registration_deadline || '',
+        documents: (activity as Activity & { files?: DocumentItem[] })?.files || [
             { id: Date.now().toString(), name: '', file: null }
         ],
-    });
+    } as ActivityForm);
 
     const addDocument = () => {
-        // setDocuments([...documents, { id: Date.now().toString(), name: '', file: null }]);
         setData('documents', [...data.documents, { id: Date.now().toString(), name: '', file: null }]);
     };
 
     const removeDocument = (id: string) => {
         if (data.documents.length > 1) {
-            // setDocuments(documents.filter(doc => doc.id !== id));
             setData('documents', data.documents.filter(doc => doc.id !== id));
         }
     };
 
     const updateDocumentName = (id: string, name: string) => {
-        // setDocuments(documents.map(doc =>
-        //     doc.id === id ? { ...doc, name } : doc
-        // ));
         setData('documents', data.documents.map(doc =>
             doc.id === id ? { ...doc, name } : doc
         ));
     };
 
     const updateDocumentFile = (id: string, file: File | null) => {
-        // setDocuments(documents.map(doc =>
-        //     doc.id === id ? { ...doc, file } : doc
-        // ));
         setData('documents', data.documents.map(doc =>
             doc.id === id ? { ...doc, file } : doc
         ));
@@ -128,26 +116,10 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        // Prepare documents for submission
-        // const validDocuments = documents
-        //     .filter(doc => doc.name.trim() && doc.file)
-        //     .map(doc => ({ name: doc.name, file: doc.file }));
-
-        // console.log('validDocuments', validDocuments);
-
-        // Set documents in form data
-        // setData({
-        //     ...data,
-        //     documents: data.documents.filter(doc => doc.name.trim() && doc.file)
-        // });
-
-        // console.log('form data', data);
-
-        // // Submit the form
-        // setTimeout(() => {
         post(route('lembaga.pelatihan.store'));
-        // }, 100);
     };
+
+    console.log('data', data);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -703,10 +675,10 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                                             <div className='space-y-1'>
                                                 <p className="font-medium text-gray-900">Bukti Pembayaran</p>
                                                 <p className="text-sm text-gray-500">bukti-pembayaran.pdf • 100 KB</p>
-                                                <p className="text-xs text-gray-500 mt-4">
+                                                <div className="text-xs text-gray-500 mt-4">
                                                     <div className="font-medium text-gray-900">Catatan:</div>
                                                     <div className="text-gray-500">Bukti pembayaran kegiatan</div>
-                                                </p>
+                                                </div>
                                             </div>
                                         </div>
                                         {/* <Badge variant="outline">Uploaded</Badge> */}

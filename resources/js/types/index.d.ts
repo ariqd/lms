@@ -86,4 +86,5 @@ export interface Activity {
     user: User;
     created_at?: string;
     updated_at?: string;
+    slug: string;
 }
