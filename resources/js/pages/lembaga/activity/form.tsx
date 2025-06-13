@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { formatFileSize, getFileName } from '@/utils/file';
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
@@ -103,26 +104,6 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
     const isValidFileType = (file: File) => {
         const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
         return allowedTypes.includes(file.type);
-    };
-
-    const formatFileSize = (bytes: number) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
-
-    const getFileName = (file: File | string | null) => {
-        if (!file) return '';
-
-        if (file instanceof File) {
-            return file.name;
-        }
-
-        // If it's a string (path), extract just the filename
-        const pathParts = file.split(/[/\\]/); // Split by both forward and backward slashes
-        return pathParts[pathParts.length - 1]; // Get the last part (filename)
     };
 
     const submit: FormEventHandler = (e) => {

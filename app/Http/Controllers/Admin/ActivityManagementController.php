@@ -16,11 +16,11 @@ class ActivityManagementController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show($slug)
     {
         return Inertia::render('admin/activity-management/form', [
             'title' => 'Detail Kegiatan',
-            'activity' => Activity::with('user')->find($id),
+            'activity' => Activity::with('user', 'files')->where('slug', $slug)->first(),
             'breadcrumbs' => [
                 [
                     'title' => 'Manajemen Kegiatan BA / DA',
@@ -28,7 +28,7 @@ class ActivityManagementController extends Controller
                 ],
                 [
                     'title' => 'Detail Kegiatan',
-                    'href' => route('admin.activity-management.show', $id),
+                    'href' => route('admin.activity-management.show', $slug),
                 ]
             ],
         ]);

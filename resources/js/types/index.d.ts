@@ -63,6 +63,12 @@ type DocumentItem = {
     file: File | string | null;
 };
 
+export interface ActivityFile {
+    id: number;
+    name: string;
+    file: File | string | null;
+}
+
 export interface Activity {
     id?: number;
     type: 'ba' | 'da' | '';
@@ -94,4 +100,5 @@ export interface Activity {
     updated_at?: string;
     slug: string;
     documents: DocumentItem[];
+    files: ActivityFile[];
 }

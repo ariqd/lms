@@ -25,6 +25,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import ActivityStatusBadge from '@/components/activity-status-badge';
+import { formatFileSize, getFileName } from '@/utils/file';
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
@@ -398,69 +399,30 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                         </div>
 
                         <div className="space-y-4">
-                            {/* Dummy Document 1 */}
-                            <div className="border rounded-lg p-4 bg-gray-50">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                                            <span className="text-blue-600 text-sm font-medium">📋</span>
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-gray-900">Proposal Kegiatan</p>
-                                            <p className="text-sm text-gray-500">proposal-kegiatan-ba-da.pdf • 2.5 MB</p>
-                                        </div>
-                                    </div>
-                                    <Badge variant="outline">Uploaded</Badge>
-                                </div>
-                            </div>
-
-                            {/* Dummy Document 2 */}
-                            <div className="border rounded-lg p-4 bg-gray-50">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
-                                            <span className="text-green-600 text-sm font-medium">💰</span>
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-gray-900">Rincian Anggaran</p>
-                                            <p className="text-sm text-gray-500">rincian-anggaran.xlsx • 156 KB</p>
+                            {
+                                activity.files.map((document, index) => (
+                                    <div className="border rounded-lg p-4 bg-gray-50" key={index}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-3">
+                                                <div className='space-y-1'>
+                                                    <p className="font-medium text-gray-900">{document.name}</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {getFileName(document.file) || '-'}
+                                                        {document.file instanceof File && ` (${formatFileSize(document.file.size)})`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Button className='bg-blue-600 hover:bg-blue-700 text-white' onClick={() => {
+                                                if (document.file) {
+                                                    window.open(document.file as string, '_blank');
+                                                }
+                                            }}>
+                                                Download
+                                            </Button>
                                         </div>
                                     </div>
-                                    <Badge variant="outline">Uploaded</Badge>
-                                </div>
-                            </div>
-
-                            {/* Dummy Document 3 */}
-                            <div className="border rounded-lg p-4 bg-gray-50">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-8 h-8 bg-purple-100 rounded flex items-center justify-center">
-                                            <span className="text-purple-600 text-sm font-medium">📅</span>
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-gray-900">Jadwal Kegiatan</p>
-                                            <p className="text-sm text-gray-500">jadwal-kegiatan.pdf • 890 KB</p>
-                                        </div>
-                                    </div>
-                                    <Badge variant="outline">Uploaded</Badge>
-                                </div>
-                            </div>
-
-                            {/* Dummy Document 4 */}
-                            <div className="border rounded-lg p-4 bg-gray-50">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-8 h-8 bg-yellow-100 rounded flex items-center justify-center">
-                                            <span className="text-yellow-600 text-sm font-medium">📋</span>
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-gray-900">Surat Rekomendasi</p>
-                                            <p className="text-sm text-gray-500">surat-rekomendasi.pdf • 1.2 MB</p>
-                                        </div>
-                                    </div>
-                                    <Badge variant="outline">Uploaded</Badge>
-                                </div>
-                            </div>
+                                ))
+                            }
                         </div>
                     </div>
 
