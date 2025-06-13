@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EyeIcon, Plus } from 'lucide-react';
 import { formatCurrency } from '@/utils/currency';
+import { transformStatus } from '@/utils/transformers';
+import ActivityStatusBadge from '@/components/activity-status-badge';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -22,7 +24,7 @@ interface PageProps {
     activities: Activity[];
 }
 
-export default function ActivityManagementIndex({ title, activities }: PageProps) {
+export default function ActivityIndex({ title, activities }: PageProps) {
     const columns: ColumnDef<Activity>[] = [
         {
             accessorKey: "name",
@@ -33,14 +35,6 @@ export default function ActivityManagementIndex({ title, activities }: PageProps
             meta: { displayName: "Judul Pelatihan" },
         },
         {
-            accessorKey: "user.name",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Nama Lembaga" />
-            ),
-            cell: ({ row }) => <div>{row.original.user?.name ?? '-'}</div>,
-            meta: { displayName: "Nama Lembaga" },
-        },
-        {
             accessorFn: (row) => {
                 return row.type === 'ba' ? 'Baitul Arqam' : 'Darul Arqam';
             },
@@ -48,23 +42,23 @@ export default function ActivityManagementIndex({ title, activities }: PageProps
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Program" />
             ),
-            cell: ({ row }) => <div>{row.getValue("type")}</div>,
+            cell: ({ row }) => <Badge variant={row.original.type === 'ba' ? 'default' : 'secondary'}>{row.getValue("type")}</Badge>,
             meta: { displayName: "Program" },
         },
         {
             accessorFn: (row) => {
-                const date = row.start_date;
+                const date = row.date_start;
                 return date ? new Date(date).toLocaleDateString('id-ID', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 }) : '-';
             },
-            id: "start_date",
+            id: "date_start",
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Tanggal Mulai" />
             ),
-            cell: ({ row }) => <div>{row.getValue("start_date")}</div>,
+            cell: ({ row }) => <div>{row.getValue("date_start")}</div>,
             meta: { displayName: "Tanggal Mulai" },
         },
         {
@@ -92,23 +86,17 @@ export default function ActivityManagementIndex({ title, activities }: PageProps
             meta: { displayName: "Tanggal Dibuat" },
         },
         {
-            id: "status",
             accessorFn: (row) => {
-                return row.is_approved ? 'Disetujui' : 'Belum Disetujui';
+                return transformStatus(row.status);
             },
+            id: "status",
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Status" />
             ),
-            cell: ({ row }) => {
-                const status = row.getValue("status") as string;
-                const isApproved = row.original.is_approved;
-
-                return (
-                    <Badge variant={isApproved ? "default" : "destructive"}>
-                        {status}
-                    </Badge>
-                );
-            },
+            cell: ({ row }) => <ActivityStatusBadge
+                originalStatus={row.original.status}
+                status={row.getValue("status")}
+            />,
             meta: { displayName: "Status" },
         },
         {

@@ -135,7 +135,6 @@ class ActivityController extends Controller
     public function update(StoreActivityRequest $request, int $id)
     {
         $activity = Activity::where('id', $id)->firstOrFail();
-        dd($activity);
 
         if ($activity->user_id !== Auth::user()->id && Auth::user()->role->identity !== 'admin') {
             return redirect()->route('lembaga.pelatihan.index')->with('error', "Anda tidak memiliki akses untuk mengubah kegiatan ini");
@@ -164,127 +163,12 @@ class ActivityController extends Controller
             'documents',
         ]);
 
+        dd($validated);
 
         $activity->update($validated);
 
-        // Handle file updates properly
         if ($validated['documents'] && is_array($validated['documents'])) {
-            try {
-                // Get current files for this activity
-                $existingFiles = $activity->files()->get();
-                $processedFileIds = [];
-
-                foreach ($validated['documents'] as $document) {
-                    // Skip if no name is provided
-                    if (!isset($document['name']) || empty($document['name'])) {
-                        continue;
-                    }
-
-                    // Check if this is a new file upload (File object) vs existing file (string path)
-                    $hasNewFile = isset($document['file']) && $document['file'] instanceof \Illuminate\Http\UploadedFile;
-
-                    if ($hasNewFile) {
-                        // This is a new file upload - handle upload and optionally replace existing
-                        $file = $document['file'];
-                        $filename = time() . '_' . $file->getClientOriginalName();
-
-                        try {
-                            $filePath = $file->storeAs('activity-documents', $filename, 'public');
-                        } catch (\Exception $e) {
-                            // If file upload fails, skip this document and continue
-                            \Log::error('Failed to upload file: ' . $e->getMessage());
-                            continue;
-                        }
-
-                        // Check if we're replacing an existing file by looking at document ID
-                        $existingFile = null;
-                        if (isset($document['id']) && is_numeric($document['id'])) {
-                            $existingFile = $existingFiles->where('id', $document['id'])->first();
-                        }
-
-                        // If no ID match, try to find by name (for replacement)
-                        if (!$existingFile) {
-                            $existingFile = $existingFiles->where('name', $document['name'])->first();
-                        }
-
-                        if ($existingFile) {
-                            // Delete old file from storage
-                            try {
-                                if (Storage::disk('public')->exists($existingFile->file)) {
-                                    Storage::disk('public')->delete($existingFile->file);
-                                }
-                            } catch (\Exception $e) {
-                                \Log::warning('Failed to delete old file: ' . $e->getMessage());
-                            }
-
-                            // Update existing record
-                            $existingFile->update([
-                                'name' => $document['name'],
-                                'file' => $filePath,
-                            ]);
-
-                            $processedFileIds[] = $existingFile->id;
-                        } else {
-                            // Create new file record
-                            $newFile = ActivityFile::create([
-                                'activity_id' => $activity->id,
-                                'name' => $document['name'],
-                                'file' => $filePath,
-                            ]);
-
-                            $processedFileIds[] = $newFile->id;
-                        }
-                    } else {
-                        // This is an existing file - find it and update if needed
-                        $existingFile = null;
-
-                        // First try to find by database ID if provided
-                        if (isset($document['id']) && is_numeric($document['id'])) {
-                            $existingFile = $existingFiles->where('id', $document['id'])->first();
-                        }
-
-                        // If no ID match and we have a file path, try to find by file path
-                        if (!$existingFile && isset($document['file']) && is_string($document['file'])) {
-                            $existingFile = $existingFiles->where('file', $document['file'])->first();
-                        }
-
-                        // Last resort: find by name (but this can be unreliable if names change)
-                        if (!$existingFile) {
-                            $existingFile = $existingFiles->where('name', $document['name'])->first();
-                        }
-
-                        if ($existingFile) {
-                            // Update name if it has changed
-                            if ($existingFile->name !== $document['name']) {
-                                $existingFile->update(['name' => $document['name']]);
-                            }
-
-                            $processedFileIds[] = $existingFile->id;
-                        }
-                        // If we can't find the existing file, it might have been deleted on frontend
-                        // So we don't create a new one, just ignore it
-                    }
-                }
-
-                // Delete files that are no longer in the documents array
-                $filesToDelete = $existingFiles->whereNotIn('id', $processedFileIds);
-                foreach ($filesToDelete as $fileToDelete) {
-                    try {
-                        // Delete file from storage
-                        if (Storage::disk('public')->exists($fileToDelete->file)) {
-                            Storage::disk('public')->delete($fileToDelete->file);
-                        }
-
-                        // Delete database record
-                        $fileToDelete->delete();
-                    } catch (\Exception $e) {
-                        \Log::warning('Failed to delete file: ' . $e->getMessage());
-                    }
-                }
-            } catch (\Exception $e) {
-                \Log::error('Error processing file updates: ' . $e->getMessage());
-                // Don't fail the entire update if file processing fails
-            }
+            dd($validated['documents']);
         }
 
         return redirect()->route('lembaga.pelatihan.index')->with('success', "Kegiatan {$validated['name']} berhasil diubah");

@@ -1,6 +1,6 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
-import { Activity, BreadcrumbItem } from '@/types';
+import { Activity, BreadcrumbItem, DocumentItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, memo, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -24,17 +24,17 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import ActivityStatusBadge from '@/components/activity-status-badge';
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
-    user_id: number;
     name: string;
     description: string;
     goals: string;
-    start_date: string;
-    end_date: string;
-    start_time: string;
-    end_time: string;
+    date_start: string;
+    date_end: string;
+    time_start: string;
+    time_end: string;
     participant_count: string;
     location: string;
     daily_schedule: string;
@@ -46,7 +46,7 @@ type ActivityForm = {
     contact_email: string;
     notes: string;
     registration_deadline: string;
-    documents: string;
+    documents: DocumentItem[];
 };
 
 const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: BreadcrumbItem[], activity: Activity }) => {
@@ -58,28 +58,27 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
 
     const allCheckboxesChecked = checkboxes.dataPelatihan && checkboxes.dataDokumen && checkboxes.dokumenPembayaran;
 
-    const { data, setData, processing, errors, put } = useForm<ActivityForm>({
-        type: activity.type ?? '',
-        name: activity.name ?? '',
-        description: activity.description ?? '',
-        goals: activity.goals ?? '',
-        start_date: activity.start_date ?? '',
-        end_date: activity.end_date ?? '',
-        start_time: '',
-        end_time: '',
-        participant_count: activity.participant_count?.toString() ?? '',
-        location: activity.location ?? '',
-        daily_schedule: activity.daily_schedule ?? '',
-        total_budget: activity.total_budget?.toString() ?? '0',
-        additional_needs: activity.additional_needs ?? '',
-        additional_equipments: activity.additional_equipments ?? '',
-        contact_name: activity.contact_name ?? '',
-        contact_phone: activity.contact_phone ?? '',
-        contact_email: activity.contact_email ?? '',
-        notes: activity.notes ?? '',
-        registration_deadline: '',
-        documents: '',
-        user_id: activity.user_id ?? 0,
+    const { data, setData, processing, errors, put } = useForm<ActivityForm>('activity-form', {
+        type: activity?.type || '',
+        name: activity?.name || '',
+        description: activity?.description || '',
+        goals: activity?.goals || '',
+        date_start: activity?.date_start || '',
+        date_end: activity?.date_end || '',
+        time_start: activity?.time_start || '',
+        time_end: activity?.time_end || '',
+        participant_count: activity?.participant_count?.toString() || '',
+        location: activity?.location || '',
+        daily_schedule: activity?.daily_schedule || '',
+        total_budget: activity?.total_budget?.toString() || '0',
+        additional_needs: activity?.additional_needs || '',
+        additional_equipments: activity?.additional_equipments || '',
+        contact_name: activity?.contact_name || '',
+        contact_phone: activity?.contact_phone || '',
+        contact_email: activity?.contact_email || '',
+        notes: activity?.notes || '',
+        registration_deadline: activity?.registration_deadline || '',
+        documents: [],
     });
 
     const submit: FormEventHandler = (e) => {
@@ -111,46 +110,35 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                         </div>
 
                         <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="type">Program Pelatihan *</Label>
-                                <Select disabled value={data.type} onValueChange={(value: 'ba' | 'da') => setData('type', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih program pelatihan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ba">Baitul Arqam (BA)</SelectItem>
-                                        <SelectItem value="da">Darul Arqam (DA)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.type} />
-                            </div>
-
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="user_id">Nama Lembaga *</Label>
-                                <Input
-                                    id="user_id"
-                                    value={activity.user?.name ?? ''}
-                                    placeholder="Masukkan nama lembaga"
-                                    disabled
-                                />
-                                <InputError message={errors.name} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Judul Pelatihan *</Label>
-                                <Input
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    placeholder="Masukkan judul pelatihan"
-                                    disabled
-                                />
-                                <InputError message={errors.name} />
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="type">Program Pelatihan</Label>
+                                    <Select value={data.type} onValueChange={(value: 'ba' | 'da') => setData('type', value)} disabled>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih program pelatihan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ba">Baitul Arqam (BA)</SelectItem>
+                                            <SelectItem value="da">Darul Arqam (DA)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.type} />
+                                </div>
+                                <div className="grid gap-2 col-span-3">
+                                    <Label htmlFor="name">Judul Pelatihan</Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        placeholder="Masukkan judul pelatihan"
+                                        disabled
+                                    />
+                                    <InputError message={errors.name} />
+                                </div>
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="description">Deskripsi Program *</Label>
+                                <Label htmlFor="description">Deskripsi Program</Label>
                                 <Textarea
                                     id="description"
                                     value={data.description}
@@ -163,7 +151,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="goals">Tujuan Pelatihan *</Label>
+                                <Label htmlFor="goals">Tujuan Pelatihan</Label>
                                 <Textarea
                                     id="goals"
                                     value={data.goals}
@@ -175,6 +163,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             </div>
                         </div>
                     </div>
+
 
                     {/* Jadwal dan Logistik */}
                     <div className="bg-white rounded-lg border p-6">
@@ -188,31 +177,31 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                         <div className="grid gap-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="start_date">Tanggal Mulai *</Label>
+                                    <Label htmlFor="date_start">Tanggal Mulai</Label>
                                     <Input
-                                        id="start_date"
+                                        id="date_start"
                                         type="date"
-                                        value={data.start_date}
-                                        onChange={(e) => setData('start_date', e.target.value)}
+                                        value={data.date_start}
+                                        onChange={(e) => setData('date_start', e.target.value)}
                                         disabled
                                     />
-                                    <InputError message={errors.start_date} />
+                                    <InputError message={errors.date_start} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="end_date">Tanggal Selesai *</Label>
+                                    <Label htmlFor="date_end">Tanggal Selesai</Label>
                                     <Input
-                                        id="end_date"
+                                        id="date_end"
                                         type="date"
-                                        value={data.end_date}
-                                        onChange={(e) => setData('end_date', e.target.value)}
+                                        value={data.date_end}
+                                        onChange={(e) => setData('date_end', e.target.value)}
                                         disabled
                                     />
-                                    <InputError message={errors.end_date} />
+                                    <InputError message={errors.date_end} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="registration_deadline">Deadline Pendaftaran *</Label>
+                                    <Label htmlFor="registration_deadline">Deadline Pendaftaran</Label>
                                     <Input
                                         id="registration_deadline"
                                         type="date"
@@ -226,31 +215,31 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="start_time">Waktu Mulai *</Label>
+                                    <Label htmlFor="time_start">Waktu Mulai</Label>
                                     <Input
-                                        id="start_time"
+                                        id="time_start"
                                         type="time"
-                                        value={data.start_time}
-                                        onChange={(e) => setData('start_time', e.target.value)}
+                                        value={data.time_start}
+                                        onChange={(e) => setData('time_start', e.target.value)}
                                         disabled
                                     />
-                                    <InputError message={errors.start_time} />
+                                    <InputError message={errors.time_start} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="end_time">Waktu Selesai *</Label>
+                                    <Label htmlFor="time_end">Waktu Selesai</Label>
                                     <Input
-                                        id="end_time"
+                                        id="time_end"
                                         type="time"
-                                        value={data.end_time}
-                                        onChange={(e) => setData('end_time', e.target.value)}
+                                        value={data.time_end}
+                                        onChange={(e) => setData('time_end', e.target.value)}
                                         disabled
                                     />
-                                    <InputError message={errors.end_time} />
+                                    <InputError message={errors.time_end} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="participant_count">Jumlah Peserta *</Label>
+                                    <Label htmlFor="participant_count">Jumlah Peserta</Label>
                                     <Input
                                         id="participant_count"
                                         type="number"
@@ -264,7 +253,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="location">Lokasi/Venue Pelatihan *</Label>
+                                <Label htmlFor="location">Lokasi/Venue Pelatihan</Label>
                                 <Textarea
                                     id="location"
                                     value={data.location}
@@ -276,7 +265,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="daily_schedule">Jadwal Harian *</Label>
+                                <Label htmlFor="daily_schedule">Jadwal Harian</Label>
                                 <Textarea
                                     id="daily_schedule"
                                     value={data.daily_schedule}
@@ -301,7 +290,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
 
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="total_budget">Total Anggaran *</Label>
+                                <Label htmlFor="total_budget">Total Anggaran</Label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">Rp</span>
                                     <Input
@@ -321,7 +310,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             </div>
 
                             <div className="grid gap-4">
-                                <Label htmlFor="additional_needs">Kebutuhan Tambahan *</Label>
+                                <Label htmlFor="additional_needs">Kebutuhan Tambahan</Label>
                                 <Textarea
                                     id="additional_needs"
                                     value={data.additional_needs}
@@ -333,7 +322,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan *</Label>
+                                <Label htmlFor="additional_equipments">Kebutuhan Peralatan</Label>
                                 <Textarea
                                     id="additional_equipments"
                                     value={data.additional_equipments}
@@ -359,7 +348,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                         <div className="grid gap-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="contact_name">Nama Penanggung Jawab *</Label>
+                                    <Label htmlFor="contact_name">Nama Penanggung Jawab</Label>
                                     <Input
                                         id="contact_name"
                                         value={data.contact_name}
@@ -371,7 +360,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="contact_phone">Nomor Telepon *</Label>
+                                    <Label htmlFor="contact_phone">Nomor Telepon</Label>
                                     <Input
                                         id="contact_phone"
                                         type="tel"
@@ -384,7 +373,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="contact_email">Email *</Label>
+                                    <Label htmlFor="contact_email">Email</Label>
                                     <Input
                                         id="contact_email"
                                         type="email"
@@ -553,9 +542,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             Batal
                         </Button>
                         <div className="flex items-center gap-2">
-                            <Badge variant={activity.is_approved ? 'default' : 'destructive'}>
-                                {activity.is_approved ? 'Disetujui' : 'Belum Disetujui'}
-                            </Badge>
+                            <ActivityStatusBadge status={activity.status} />
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button variant="default">
@@ -672,7 +659,7 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                 </AlertDialogContent>
                             </AlertDialog>
                             {
-                                !activity.is_approved && (
+                                activity.status === 'pending' && (
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button className="bg-green-700 hover:bg-green-800 text-white">

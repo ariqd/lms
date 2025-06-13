@@ -21,7 +21,7 @@ class StoreActivityRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $mustHaveRules = [
             'type' => 'required|in:ba,da',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -42,9 +42,18 @@ class StoreActivityRequest extends FormRequest
             'contact_email' => 'required|email|max:255',
             'notes' => 'nullable|string',
             'documents' => 'nullable|array',
-            'documents.*.name' => 'nullable|string|max:255',
-            'documents.*.file' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:10240', // 10MB max
+            'documents.*.name' => 'sometimes|string|max:255',
+            'documents.*.file' => 'sometimes|nullable|file|mimes:pdf,png,jpg,jpeg|max:10240',
+            'documents.*.id' => 'sometimes|string',
         ];
+
+        // If method is PUT, adjust the rules of documents
+        // if (request()->method() === 'PUT') {
+        //     $mustHaveRules['documents.*.file'] = 'sometimes|nullable|string';
+        //     return $mustHaveRules;
+        // }
+
+        return $mustHaveRules;
     }
 
     public function messages(): array

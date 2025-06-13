@@ -1,7 +1,7 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
 import { Activity, BreadcrumbItem, DocumentItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +47,9 @@ type PageProps = {
 }
 
 const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps) => {
-    const { data, setData, post, processing, errors, put } = useForm({
+    const { errors: updateErrors } = usePage().props
+
+    const { data, setData, post, processing, errors: createErrors } = useForm({
         type: activity?.type || '',
         name: activity?.name || '',
         description: activity?.description || '',
@@ -127,11 +129,20 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
         e.preventDefault();
 
         if (activity) {
-            put(route('lembaga.pelatihan.update', activity.id));
+            router.post(route('lembaga.pelatihan.update', activity.id), {
+                _method: 'put',
+                ...data,
+            });
         } else {
             post(route('lembaga.pelatihan.store'));
         }
     };
+
+    console.log('data', data);
+
+    const errors = activity ? updateErrors : createErrors;
+
+    console.log('errors', errors);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -547,6 +558,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                                                 disabled={processing}
                                                 className="mt-1 bg-white"
                                             />
+                                            <InputError message={errors && errors[`documents.${index}.name` as keyof typeof errors]} />
                                         </div>
 
                                         {/* File Upload Area */}
@@ -576,6 +588,7 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
                                                     disabled={processing}
                                                     className="cursor-pointer col-span-8 bg-white"
                                                 />
+                                                <InputError message={errors && errors[`documents.${index}.file` as keyof typeof errors]} />
                                             </div>
                                             <p className="text-xs text-gray-500 mt-1">
                                                 Format: PDF, PNG, JPG, JPEG (Max: 10MB)

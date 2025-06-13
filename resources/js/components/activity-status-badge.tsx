@@ -1,31 +1,30 @@
-import { transformStatus } from '@/utils/transformers';
 import { Badge } from './ui/badge'
 import { useMemo } from 'react';
 
-const ActivityStatusBadge = ({ status }: { status: string }) => {
+const ActivityStatusBadge = ({ status, originalStatus }: { status: string, originalStatus?: string }) => {
 
     const statusColor = useMemo(() => {
-        switch (status) {
+        switch (originalStatus || status) {
             case 'pending':
-                return 'default';
+                return 'bg-yellow-500 text-black';
             case 'approved':
-                return 'secondary';
+                return 'bg-green-500 text-black';
             case 'rejected':
-                return 'destructive';
+                return 'bg-red-500 text-black';
             case 'in_progress':
-                return 'outline';
+                return 'bg-blue-500 text-black';
             case 'finished':
-                return 'secondary';
+                return 'bg-green-500 text-black';
             case 'cancelled':
-                return 'destructive';
+                return 'bg-red-500 text-black';
             default:
-                return 'default';
+                return 'bg-gray-500 text-white';
         }
-    }, [status]);
+    }, [originalStatus, status]);
 
     return (
-        <Badge variant={statusColor}>
-            {transformStatus(status)}
+        <Badge className={`text-xs font-medium rounded-md ${statusColor}`}>
+            {status}
         </Badge>
     )
 };

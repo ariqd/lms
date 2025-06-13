@@ -93,7 +93,7 @@ export default function ActivityIndex({ title, activities }: PageProps) {
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Status" />
             ),
-            cell: ({ row }) => <ActivityStatusBadge status={row.getValue("status")} />,
+            cell: ({ row }) => <ActivityStatusBadge originalStatus={row.original.status} status={row.getValue("status")} />,
             meta: { displayName: "Status" },
         },
         {
