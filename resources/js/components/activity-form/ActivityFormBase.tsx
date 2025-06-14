@@ -11,12 +11,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Download, Plus, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
+import { formatFileSize, getFileName, isValidFileType } from '@/utils/file';
 
 const ActivityFormBase = ({
+    activity,
     breadcrumbs,
     title,
     description,
@@ -430,6 +432,159 @@ const ActivityFormBase = ({
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Dokumen Penunjang */}
+                    <div className="bg-white rounded-lg border p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
+                                <span className="text-red-600 text-sm font-medium">📄</span>
+                            </div>
+                            <h3 className="text-lg font-semibold">Dokumen Penunjang</h3>
+                        </div>
+
+                        {config.permissions.canEdit ? (
+                            /* Lembaga View - Editable Documents */
+                            <div className="space-y-4">
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <p className="text-sm text-blue-800">
+                                        <span className="font-medium">📋 Petunjuk Upload Dokumen:</span>
+                                    </p>
+                                    <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
+                                        <li>Upload dokumen pendukung seperti detail pelatihan, RAB, surat rekomendasi, dll.</li>
+                                        <li>Format yang didukung: <span className="font-medium">PDF, PNG, JPG, JPEG</span></li>
+                                        <li>Ukuran maksimal: <span className="font-medium">10MB per file</span></li>
+                                        {formLogic.data.documents.length > 0 && <li>Update dokumen yang sudah diupload dengan mengubah nama dokumen dan/atau mengupload ulang file dokumen.</li>}
+                                        {formLogic.data.documents.length > 0 && <li>Dokumen akan terupdate setelah tombol <span className="font-medium">Simpan Perubahan</span> ditekan.</li>}
+                                    </ul>
+                                </div>
+
+                                {data.documents.map((document, index) => (
+                                    <div key={document.id} className="border rounded-lg p-4 bg-gray-50">
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {/* Document Name Input */}
+                                            <div>
+                                                <Label htmlFor={`doc-name-${document.id}`} className="text-sm font-medium">
+                                                    Nama Dokumen #{index + 1}
+                                                </Label>
+                                                <Input
+                                                    id={`doc-name-${document.id}`}
+                                                    type="text"
+                                                    value={document.name}
+                                                    onChange={(e) => formLogic.updateDocumentName(document.id, e.target.value)}
+                                                    placeholder="Contoh: Proposal Kegiatan"
+                                                    disabled={formLogic.processing}
+                                                    className="mt-1 bg-white"
+                                                />
+                                                <InputError message={errors && errors[`documents.${index}.name` as keyof typeof errors]} />
+                                            </div>
+
+                                            {/* File Upload Area */}
+                                            <div>
+                                                <Label className="text-sm font-medium">
+                                                    {document.file ? 'Ganti' : 'Upload'} File Dokumen
+                                                </Label>
+                                                <div className="mt-1">
+                                                    <Input
+                                                        id={`doc-file-${document.id}`}
+                                                        type="file"
+                                                        accept=".pdf,.png,.jpg,.jpeg"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0] || null;
+                                                            if (file && !isValidFileType(file)) {
+                                                                alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
+                                                                e.target.value = '';
+                                                                return;
+                                                            }
+                                                            if (file && file.size > 10 * 1024 * 1024) {
+                                                                alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                                                                e.target.value = '';
+                                                                return;
+                                                            }
+                                                            formLogic.updateDocumentFile(document.id, file);
+                                                        }}
+                                                        disabled={formLogic.processing}
+                                                        className="cursor-pointer col-span-8 bg-white"
+                                                    />
+                                                    <InputError message={errors && errors[`documents.${index}.file` as keyof typeof errors]} />
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Format: PDF, PNG, JPG, JPEG (Max: 10MB)
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <Label className="text-sm text-green-600">
+                                                    {getFileName(document.file) || '-'}
+                                                    {document.file instanceof File && ` (${formatFileSize(document.file.size)})`}
+                                                </Label>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => formLogic.removeDocument(document.id)}
+                                                    disabled={formLogic.processing || data.documents.length === 1}
+                                                    className="text-red-600 border-red-200 bg-white hover:bg-red-50 w-full mt-1"
+                                                >
+                                                    <Trash2 className="w-4 h-4 mr-1" />
+                                                    Hapus Dokumen
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={formLogic.addDocument}
+                                    disabled={formLogic.processing}
+                                    className="w-full border-dashed border-blue-300 text-blue-600 hover:bg-blue-50"
+                                >
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Tambah Dokumen
+                                </Button>
+                            </div>
+                        ) : (
+                            /* Admin View - Read-only Documents */
+                            <div className="space-y-4">
+                                {activity?.files && activity.files.length > 0 ? (
+                                    activity.files.map((document, index) => (
+                                        <div className="border rounded-lg p-4 bg-gray-50" key={index}>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className='space-y-1'>
+                                                        <p className="font-medium text-gray-900">{document.name}</p>
+                                                        <p className="text-sm text-gray-500">
+                                                            {getFileName(document.file) || '-'}
+                                                            {document.file instanceof File && ` (${formatFileSize(document.file.size)})`}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    className='bg-blue-600 hover:bg-blue-700 text-white'
+                                                    onClick={() => {
+                                                        if (activity?.slug && document.id) {
+                                                            window.open(route('admin.activity-management.files.download', {
+                                                                activity: activity.slug,
+                                                                file: document.id
+                                                            }), '_blank');
+                                                        }
+                                                    }}
+                                                >
+                                                    <Download className="w-4 h-4 mr-2" />
+                                                    Download
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="border rounded-lg p-4 bg-gray-50">
+                                        <p className="text-sm text-gray-500 text-center">Tidak ada dokumen penunjang yang diupload</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                 </form>
