@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { ActivityFormBaseProps } from './types/ActivityFormTypes';
@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Download, Plus, Trash2 } from 'lucide-react';
+import { CalendarIcon, Download, Plus, Trash2, Upload, ArrowLeft, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
@@ -585,6 +585,301 @@ const ActivityFormBase = ({
                                 )}
                             </div>
                         )}
+                    </div>
+
+                    {/* Catatan Tambahan */}
+                    <div className="bg-white rounded-lg border p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center">
+                                <span className="text-gray-600 text-sm font-medium">📝</span>
+                            </div>
+                            <h3 className="text-lg font-semibold">Catatan Tambahan</h3>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="notes">Catatan atau Informasi Tambahan</Label>
+                            {
+                                config.permissions.canEdit || data.notes ? <Textarea
+                                    id="notes"
+                                    value={data.notes}
+                                    onChange={(e) => setData('notes', e.target.value)}
+                                    placeholder="Informasi tambahan yang perlu disampaikan"
+                                    className="min-h-[100px]"
+                                    disabled={!config.permissions.canEdit}
+                                /> : <p className="text-sm text-gray-500">Tidak ada catatan tambahan</p>
+                            }
+
+                            <InputError message={errors.notes} />
+                        </div>
+                    </div>
+
+                    {/* Invoice Section */}
+                    {config.showInvoiceSection && (
+                        <div className="bg-white rounded-lg border p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="w-6 h-6 bg-indigo-100 rounded flex items-center justify-center">
+                                    <span className="text-indigo-600 text-sm font-medium">🧾</span>
+                                </div>
+                                <h3 className="text-lg font-semibold">Invoice</h3>
+                            </div>
+
+                            {config.permissions.canViewInvoice && activity?.invoice_file ? (
+                                /* Show existing invoice */
+                                <div className="border rounded-lg p-4 bg-gray-50 mb-5">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div>
+                                                <p className="font-medium text-gray-900">{activity.invoice_name || 'Invoice'}</p>
+                                                <p className="text-sm text-gray-500">{getFileName(activity.invoice_file) || 'invoice.pdf'}</p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="default"
+                                            disabled={formLogic.processing}
+                                            className='bg-blue-600 hover:bg-blue-700 text-white'
+                                            onClick={() => {
+                                                // Handle invoice download based on user role
+                                                if (config.role === 'admin' && activity?.slug) {
+                                                    window.open(route('admin.activity-management.invoice.download', {
+                                                        activity: activity.slug
+                                                    }), '_blank');
+                                                } else if (config.role === 'lembaga' && activity?.id) {
+                                                    window.open(route('lembaga.pelatihan.invoice.download', {
+                                                        activity: activity.id
+                                                    }), '_blank');
+                                                }
+                                            }}
+                                        >
+                                            <Download className="w-4 h-4 mr-2" />
+                                            Download Invoice
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : config.permissions.canViewInvoice && (
+                                <div className="border rounded-lg p-4 bg-gray-50 mb-5">
+                                    <div className="flex items-center justify-center">
+                                        <p className="text-sm text-gray-500">
+                                            {config.role === 'lembaga' ? 'Admin belum mengupload Invoice' : 'Invoice belum diupload'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {config.permissions.canSendInvoice && (
+                                /* Admin can upload/update invoice */
+                                <>
+                                    {activity?.invoice_file && (
+                                        <p className="font-medium mb-2 text-gray-600">Ganti Invoice</p>
+                                    )}
+                                    <div className="border rounded-lg p-4 bg-gray-50 mb-5">
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <Label htmlFor="invoice_name" className="text-sm font-medium">
+                                                    Nama Invoice
+                                                </Label>
+                                                <Input
+                                                    id="invoice_name"
+                                                    type="text"
+                                                    value={data.invoice_name || ''}
+                                                    onChange={(e) => setData('invoice_name', e.target.value)}
+                                                    placeholder="Contoh: Invoice Kegiatan"
+                                                    disabled={formLogic.processing}
+                                                    className="mt-1 bg-white"
+                                                />
+                                                <InputError message={errors.invoice_name} />
+                                            </div>
+
+                                            <div>
+                                                <Label className="text-sm font-medium">
+                                                    File Invoice
+                                                </Label>
+                                                <div className="mt-1">
+                                                    <Input
+                                                        id="invoice_file"
+                                                        type="file"
+                                                        accept=".pdf,.png,.jpg,.jpeg"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0] || null;
+                                                            if (file && !isValidFileType(file)) {
+                                                                alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
+                                                                e.target.value = '';
+                                                                return;
+                                                            }
+                                                            if (file && file.size > 10 * 1024 * 1024) {
+                                                                alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                                                                e.target.value = '';
+                                                                return;
+                                                            }
+                                                            setData('invoice_file', file);
+                                                        }}
+                                                        disabled={formLogic.processing}
+                                                        className="cursor-pointer bg-white"
+                                                    />
+                                                    <InputError message={errors.invoice_file} />
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Format: PDF, PNG, JPG, JPEG (Max: 10MB)
+                                                </p>
+                                            </div>
+
+                                            <div className="flex flex-col justify-center">
+                                                <Label className="text-sm font-medium mb-2">Status File:</Label>
+                                                <p className="text-sm text-gray-500">
+                                                    {data.invoice_file ? (
+                                                        <>
+                                                            {getFileName(data.invoice_file)}
+                                                            {data.invoice_file instanceof File && (
+                                                                <span className="block text-xs">
+                                                                    {formatFileSize(data.invoice_file.size)}
+                                                                </span>
+                                                            )}
+                                                        </>
+                                                    ) : 'Invoice belum diupload'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {config.permissions.canUploadPaymentProof && activity?.invoice_file && (
+                                /* Lembaga can upload payment proof */
+                                <>
+                                    <div className="grid gap-2 mt-5">
+                                        <Label htmlFor="bukti_pembayaran" className='text-sm font-medium text-gray-900'>
+                                            Upload Bukti Pembayaran
+                                        </Label>
+                                        <div className="grid grid-cols-12 gap-2">
+                                            <Input
+                                                type="file"
+                                                accept=".pdf,.png,.jpg,.jpeg"
+                                                disabled={formLogic.processing}
+                                                className='cursor-pointer col-span-4'
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file && !isValidFileType(file)) {
+                                                        alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
+                                                        e.target.value = '';
+                                                        return;
+                                                    }
+                                                    if (file && file.size > 10 * 1024 * 1024) {
+                                                        alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                                                        e.target.value = '';
+                                                        return;
+                                                    }
+                                                    // Handle payment proof upload
+                                                    if (file && formLogic.additionalHandlers?.handlePaymentProofUpload) {
+                                                        (formLogic.additionalHandlers.handlePaymentProofUpload as (file: File) => void)(file);
+                                                    }
+                                                }}
+                                            />
+                                            <Input
+                                                type="text"
+                                                placeholder="Catatan (opsional)"
+                                                disabled={formLogic.processing}
+                                                className='col-span-5'
+                                                onChange={(e) => {
+                                                    if (formLogic.additionalHandlers?.handlePaymentProofNotes) {
+                                                        (formLogic.additionalHandlers.handlePaymentProofNotes as (notes: string) => void)(e.target.value);
+                                                    }
+                                                }}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="default"
+                                                disabled={formLogic.processing}
+                                                className='bg-blue-600 hover:bg-blue-700 col-span-3'
+                                                onClick={() => {
+                                                    if (formLogic.additionalHandlers?.submitPaymentProof) {
+                                                        (formLogic.additionalHandlers.submitPaymentProof as () => void)();
+                                                    }
+                                                }}
+                                            >
+                                                <Upload className='w-4 h-4 mr-2' />
+                                                Upload Bukti Pembayaran
+                                            </Button>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Supports: PDF, PNG, JPG, JPEG (Max: 10MB)
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+
+                            {(config.permissions.canViewInvoice || config.permissions.canSendInvoice) && activity?.payment_proof_file ? (
+                                /* Show existing payment proof */
+                                <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className='space-y-1'>
+                                                <p className="font-medium text-gray-900">Bukti Pembayaran</p>
+                                                <p className="text-sm text-gray-500">
+                                                    {getFileName(activity.payment_proof_file) || 'bukti-pembayaran.pdf'}
+                                                </p>
+                                                {activity.payment_proof_name && (
+                                                    <div className="text-xs text-gray-500 mt-4">
+                                                        <div className="font-medium text-gray-900">Nama File:</div>
+                                                        <div className="text-gray-500">{activity.payment_proof_name}</div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="default"
+                                            disabled={formLogic.processing}
+                                            className='bg-blue-600 hover:bg-blue-700 text-white'
+                                            onClick={() => {
+                                                // Handle payment proof download based on user role
+                                                if (config.role === 'admin' && activity?.slug) {
+                                                    window.open(route('admin.activity-management.payment-proof.download', {
+                                                        activity: activity.slug
+                                                    }), '_blank');
+                                                } else if (config.role === 'lembaga' && activity?.id) {
+                                                    window.open(route('lembaga.pelatihan.payment-proof.download', {
+                                                        activity: activity.id
+                                                    }), '_blank');
+                                                }
+                                            }}
+                                        >
+                                            <Download className="w-4 h-4 mr-2" />
+                                            Download Bukti Pembayaran
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : config.permissions.canSendInvoice && !activity?.payment_proof_file && (
+                                /* Show no payment proof message for admin */
+                                <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                                    <div className="flex items-center justify-center">
+                                        <p className="text-sm text-gray-500">Lembaga Pelatihan belum mengirimkan bukti pembayaran</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Submit Buttons */}
+                    <div className="flex justify-between gap-3 pt-6 border-t">
+                        <Button asChild variant="outline" disabled={formLogic.processing}>
+                            <Link href={config.backUrl}>
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                Kembali
+                            </Link>
+                        </Button>
+
+                        <div className="flex items-center gap-3">
+                            {/* Custom additional actions */}
+                            {config.additionalActions && config.additionalActions}
+
+                            {/* Submit button for lembaga forms */}
+                            {config.permissions.canSubmit && (
+                                <Button type="submit" disabled={formLogic.processing}>
+                                    {formLogic.processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                    {config.submitButtonText}
+                                </Button>
+                            )}
+                        </div>
                     </div>
 
                 </form>

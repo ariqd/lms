@@ -3,6 +3,7 @@ import { BreadcrumbItem, Activity } from '@/types';
 import ActivityFormBase from '@/components/activity-form/ActivityFormBase';
 import { useAdminActivityForm } from '@/components/activity-form/hooks/useAdminActivityForm';
 import { getAdminConfig } from '@/components/activity-form/config/roleConfigs';
+import FormActions from './form-actions';
 
 type Props = {
     breadcrumbs: BreadcrumbItem[];
@@ -17,7 +18,13 @@ const AdminActivityForm = ({ breadcrumbs, activity }: Props) => {
         <ActivityFormBase
             activity={activity}
             breadcrumbs={breadcrumbs}
-            config={config}
+            config={{
+                ...config,
+                additionalActions: <FormActions
+                    activity={activity}
+                    formLogic={formLogic}
+                />
+            }}
             formLogic={formLogic}
             title="Detail Kegiatan"
             description="Verifikasi formulir pengajuan pelatihan"
