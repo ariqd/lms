@@ -54,6 +54,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('reports', function () {
             return Inertia::render('blank', ['title' => 'Laporan']);
         })->name('reports');
+
+        Route::get('activity-management/{activity}/files/{file}/download', [ActivityManagementController::class, 'downloadFile'])
+            ->name('admin.activity-management.files.download');
+
+        Route::post('activity-management/{activity}/send-invoice', [ActivityManagementController::class, 'sendInvoice'])
+            ->name('admin.activity-management.send-invoice');
     });
 
     // KADER ROUTES

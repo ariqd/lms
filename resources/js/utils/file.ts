@@ -17,3 +17,8 @@ export const getFileName = (file: File | string | null) => {
     const pathParts = file.split(/[/\\]/); // Split by both forward and backward slashes
     return pathParts[pathParts.length - 1]; // Get the last part (filename)
 };
+
+export const isValidFileType = (file: File) => {
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
+    return allowedTypes.includes(file.type);
+};

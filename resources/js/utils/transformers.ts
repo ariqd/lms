@@ -7,7 +7,7 @@ export const transformStatus = (status: string): string => {
         case 'rejected':
             return 'Ditolak';
         case 'in_progress':
-            return 'Sedang Berlangsung';
+            return 'Invoice Dikirim';
         case 'finished':
             return 'Selesai';
         case 'cancelled':

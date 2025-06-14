@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { formatFileSize, getFileName } from '@/utils/file';
+import { formatFileSize, getFileName, isValidFileType } from '@/utils/file';
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
@@ -99,11 +99,6 @@ const ActivityCreate = ({ title, activity, breadcrumbs, description }: PageProps
         setData('documents', data.documents.map(doc =>
             doc.id === id ? { ...doc, file } : doc
         ));
-    };
-
-    const isValidFileType = (file: File) => {
-        const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
-        return allowedTypes.includes(file.type);
     };
 
     const submit: FormEventHandler = (e) => {

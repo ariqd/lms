@@ -1,3 +1,4 @@
+import { transformStatus } from '@/utils/transformers';
 import { Badge } from './ui/badge'
 import { useMemo } from 'react';
 
@@ -12,7 +13,7 @@ const ActivityStatusBadge = ({ status, originalStatus }: { status: string, origi
             case 'rejected':
                 return 'bg-red-500 text-black';
             case 'in_progress':
-                return 'bg-blue-500 text-black';
+                return 'bg-blue-500 text-white';
             case 'finished':
                 return 'bg-green-500 text-black';
             case 'cancelled':
@@ -24,7 +25,7 @@ const ActivityStatusBadge = ({ status, originalStatus }: { status: string, origi
 
     return (
         <Badge className={`text-xs font-medium rounded-md ${statusColor}`}>
-            {status}
+            {transformStatus(status)}
         </Badge>
     )
 };

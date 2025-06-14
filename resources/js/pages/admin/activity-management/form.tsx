@@ -1,7 +1,7 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout'
 import { Activity, BreadcrumbItem, DocumentItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router, Link } from '@inertiajs/react';
 import { FormEventHandler, memo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
-import { Check, LoaderCircle, NotebookPen } from 'lucide-react';
+import { Check, LoaderCircle, NotebookPen, Download, Upload, ArrowLeft } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
 import {
     AlertDialog,
@@ -22,10 +22,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import ActivityStatusBadge from '@/components/activity-status-badge';
-import { formatFileSize, getFileName } from '@/utils/file';
+import { formatFileSize, getFileName, isValidFileType } from '@/utils/file';
 
 type ActivityForm = {
     type: 'ba' | 'da' | '';
@@ -48,6 +47,8 @@ type ActivityForm = {
     notes: string;
     registration_deadline: string;
     documents: DocumentItem[];
+    invoice_name: string;
+    invoice_file: File | null;
 };
 
 const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: BreadcrumbItem[], activity: Activity }) => {
@@ -80,6 +81,8 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
         notes: activity?.notes || '',
         registration_deadline: activity?.registration_deadline || '',
         documents: [],
+        invoice_name: '',
+        invoice_file: null,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -412,17 +415,48 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                                     </p>
                                                 </div>
                                             </div>
-                                            <Button className='bg-blue-600 hover:bg-blue-700 text-white' onClick={() => {
-                                                if (document.file) {
-                                                    window.open(document.file as string, '_blank');
-                                                }
-                                            }}>
+                                            <Button
+                                                className='bg-blue-600 hover:bg-blue-700 text-white'
+                                                onClick={() => {
+                                                    window.open(route('admin.activity-management.files.download', {
+                                                        activity: activity.slug,
+                                                        file: document.id
+                                                    }), '_blank');
+                                                }}
+                                            >
+                                                <Download className="w-4 h-4 mr-2" />
                                                 Download
                                             </Button>
                                         </div>
                                     </div>
                                 ))
                             }
+                        </div>
+                    </div>
+
+                    {/* Catatan Tambahan */}
+                    <div className="bg-white rounded-lg border p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center">
+                                <span className="text-gray-600 text-sm font-medium">📝</span>
+                            </div>
+                            <h3 className="text-lg font-semibold">Catatan Tambahan</h3>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="notes">Catatan atau Informasi Tambahan</Label>
+                            {
+                                activity.notes ? <Textarea
+                                    id="notes"
+                                    value={data.notes}
+                                    onChange={(e) => setData('notes', e.target.value)}
+                                    placeholder="Informasi tambahan yang perlu disampaikan"
+                                    className="min-h-[100px]"
+                                    disabled
+                                /> : <p className="text-sm text-gray-500">Tidak ada catatan tambahan</p>
+                            }
+
+                            <InputError message={errors.notes} />
                         </div>
                     </div>
 
@@ -435,73 +469,138 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                             <h3 className="text-lg font-semibold">Invoice</h3>
                         </div>
 
-                        <div className="grid gap-2">
-                            <div className="grid grid-cols-12 gap-2">
-                                <Input
-                                    type="text"
-                                    placeholder="Masukkan nama invoice"
-                                    disabled={processing}
-                                    className='col-span-5'
-                                />
-                                <Input
-                                    type="file"
-                                    accept=".pdf,.png,.jpg,.jpeg"
-                                    disabled={processing}
-                                    className='cursor-pointer col-span-5'
-                                />
-                                <Button
-                                    type="button"
-                                    variant="default"
-                                    disabled={processing}
-                                    className='bg-blue-600 hover:bg-blue-700 col-span-2'
-                                >
-                                    Upload Invoice
-                                </Button>
+                        {
+                            activity.invoice_file && (
+                                <>
+                                    <div className="border rounded-lg p-4 bg-gray-50 mb-5">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-3">
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{activity.invoice_name}</p>
+                                                    <p className="text-sm text-gray-500">{getFileName(activity.invoice_file) || 'invoice.pdf'}</p>
+                                                </div>
+                                            </div>
+                                            <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
+                                                Download Invoice
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <p className="font-medium mb-2 text-gray-600">Ganti Invoice</p>
+                                </>
+                            )
+                        }
+
+                        <div className="border rounded-lg p-4 bg-gray-50">
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <Label htmlFor={`invoice_name`} className="text-sm font-medium">
+                                        Nama Invoice
+                                    </Label>
+                                    <Input
+                                        id={`invoice_name`}
+                                        type="text"
+                                        value={data.invoice_name}
+                                        onChange={(e) => setData('invoice_name', e.target.value)}
+                                        placeholder="Contoh: Invoice Kegiatan"
+                                        disabled={processing}
+                                        className="mt-1 bg-white"
+                                    />
+                                    <InputError message={errors && errors[`invoice_name` as keyof typeof errors]} />
+                                </div>
+
+                                <div>
+                                    <Label className="text-sm font-medium">
+                                        File Invoice
+                                    </Label>
+                                    <div className="mt-1">
+                                        <Input
+                                            id={`invoice_file`}
+                                            type="file"
+                                            accept=".pdf,.png,.jpg,.jpeg"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0] || null;
+                                                if (file && !isValidFileType(file)) {
+                                                    alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
+                                                    e.target.value = '';
+                                                    return;
+                                                }
+                                                if (file && file.size > 10 * 1024 * 1024) {
+                                                    alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                                                    e.target.value = '';
+                                                    return;
+                                                }
+                                                setData('invoice_file', file);
+                                            }}
+                                            disabled={processing}
+                                            className="cursor-pointer col-span-8 bg-white"
+                                        />
+                                        <InputError message={errors && errors[`invoice_file` as keyof typeof errors]} />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Format: PDF, PNG, JPG, JPEG (Max: 10MB)
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <p className="text-sm text-gray-500">
+                                        {getFileName(data.invoice_file) || 'Invoice belum diupload'}
+                                    </p>
+                                    {data.invoice_file instanceof File && (
+                                        <p className="text-sm text-gray-500">
+                                            {formatFileSize(data.invoice_file.size)}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                                Supports: PDF, PNG, JPG, JPEG (Max: 10MB)
-                            </p>
                         </div>
 
-                        <div className="border rounded-lg p-4 bg-gray-50 mt-5">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <div>
-                                        <p className="font-medium text-gray-900">Nama Invoice</p>
-                                        <p className="text-sm text-gray-500">invoice.pdf • 100 KB</p>
+                        {
+                            !activity.payment_proof_file ? (
+                                <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                                    <div className="flex items-center justify-center">
+                                        <p className="text-sm text-gray-500">Lembaga Pelatihan belum mengirimkan bukti pembayaran</p>
                                     </div>
                                 </div>
-                                {/* <Badge variant="outline">Uploaded</Badge> */}
-                                <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
-                                    Download Invoice
-                                </Button>
-                            </div>
-                        </div>
+                            ) : (
+                                <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div>
+                                                <p className="font-medium text-gray-900">Nama Bukti Pembayaran</p>
+                                                <p className="text-sm text-gray-500">bukti-pembayaran.pdf • 100 KB</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        }
 
-                        <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                        {/* <div className="border rounded-lg p-4 bg-gray-50 mt-5">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
                                     <div className='space-y-1'>
                                         <p className="font-medium text-gray-900">Bukti Pembayaran</p>
                                         <p className="text-sm text-gray-500">bukti-pembayaran.pdf • 100 KB</p>
-                                        <p className="text-xs text-gray-500 mt-4">
+                                        <div className="text-xs text-gray-500 mt-4">
                                             <div className="font-medium text-gray-900">Catatan:</div>
                                             <div className="text-gray-500">Bukti pembayaran kegiatan</div>
-                                        </p>
+                                        </div>
                                     </div>
                                 </div>
-                                {/* <Badge variant="outline">Uploaded</Badge> */}
                                 <Button type="button" variant="default" disabled={processing} className='bg-blue-600 hover:bg-blue-700 col-span-2'>
                                     Download Bukti Pembayaran
                                 </Button>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* Submit Buttons */}
                     <div className="flex justify-between gap-3 pt-6 border-t">
-                        <Button type="button" variant="outline" disabled>
-                            Batal
+                        <Button variant="outline" asChild disabled={processing}>
+                            <Link href={route('admin.activity-management.index')}>
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                Kembali ke Daftar Kegiatan
+                            </Link>
                         </Button>
                         <div className="flex items-center gap-2">
                             <ActivityStatusBadge status={activity.status} />
@@ -528,7 +627,6 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                         />
                                         <InputError message={errors.notes} />
                                     </div>
-                                    {/* Riwayat Catatan */}
                                     <div className="space-y-4 h-40 overflow-y-auto">
                                         <div className="text-sm font-medium">
                                             Riwayat Catatan:
@@ -621,72 +719,118 @@ const ActivityManagementForm = ({ breadcrumbs, activity }: { breadcrumbs: Breadc
                                 </AlertDialogContent>
                             </AlertDialog>
                             {
-                                activity.status === 'pending' && (
+                                activity.status === 'pending' || activity.status === 'in_progress' ?
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button className="bg-green-700 hover:bg-green-800 text-white">
+                                            <Button
+                                                className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                                                disabled={processing || !data.invoice_file || !data.invoice_name}
+                                            >
                                                 {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
-                                                <Check className="w-4 h-4 mr-2" />
-                                                Setujui Kegiatan
+                                                <Upload className="w-4 h-4 mr-2" />
+                                                {activity.status === 'in_progress' ? 'Kirim Invoice Baru' : 'Kirim Invoice'}
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
-                                                <AlertDialogTitle>Verifikasi Kelengkapan Dokumen</AlertDialogTitle>
+                                                <AlertDialogTitle>Kirim Invoice</AlertDialogTitle>
                                                 <AlertDialogDescription>
-                                                    Pastikan semua dokumen telah diperiksa dan lengkap sebelum menyetujui kegiatan ini.
+                                                    Kirim invoice kegiatan kepada Lembaga Pelatihan?
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
-                                            <div className="space-y-4 py-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <Checkbox
-                                                        id="dataPelatihan"
-                                                        checked={checkboxes.dataPelatihan}
-                                                        onCheckedChange={(checked) =>
-                                                            setCheckboxes(prev => ({ ...prev, dataPelatihan: !!checked }))
-                                                        }
-                                                    />
-                                                    <Label htmlFor="dataPelatihan">Data Pelatihan</Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <Checkbox
-                                                        id="dataDokumen"
-                                                        checked={checkboxes.dataDokumen}
-                                                        onCheckedChange={(checked) =>
-                                                            setCheckboxes(prev => ({ ...prev, dataDokumen: !!checked }))
-                                                        }
-                                                    />
-                                                    <Label htmlFor="dataDokumen">Data Dokumen Penunjang</Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <Checkbox
-                                                        id="dokumenPembayaran"
-                                                        checked={checkboxes.dokumenPembayaran}
-                                                        onCheckedChange={(checked) =>
-                                                            setCheckboxes(prev => ({ ...prev, dokumenPembayaran: !!checked }))
-                                                        }
-                                                    />
-                                                    <Label htmlFor="dokumenPembayaran">Dokumen Pembayaran</Label>
-                                                </div>
-                                            </div>
                                             <AlertDialogFooter>
                                                 <AlertDialogCancel>Batal</AlertDialogCancel>
                                                 <AlertDialogAction asChild>
                                                     <Button
                                                         type="button"
-                                                        onClick={handleApproval}
-                                                        disabled={processing || !allCheckboxesChecked}
-                                                        className="bg-green-700 hover:bg-green-800 text-white disabled:opacity-50"
+                                                        onClick={() => {
+                                                            router.post(route('admin.activity-management.send-invoice', { activity: activity.slug }), {
+                                                                invoice_name: data.invoice_name,
+                                                                invoice_file: data.invoice_file,
+                                                            }, {
+                                                                forceFormData: true,
+                                                                onError: (errors) => {
+                                                                    console.error('Invoice send failed:', errors);
+                                                                }
+                                                            });
+                                                        }}
+                                                        disabled={processing}
+                                                        className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                                                     >
                                                         {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
-                                                        <Check className="w-4 h-4 mr-2" />
-                                                        Setujui Kegiatan
+                                                        <Upload className="w-4 h-4 mr-2" />
+                                                        Kirim Invoice
                                                     </Button>
                                                 </AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
-                                )
+                                    : (
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button className="bg-green-700 hover:bg-green-800 text-white">
+                                                    {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                                    <Check className="w-4 h-4 mr-2" />
+                                                    Setujui Kegiatan
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Verifikasi Kelengkapan Dokumen</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Pastikan semua dokumen telah diperiksa dan lengkap sebelum menyetujui kegiatan ini.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <div className="space-y-4 py-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Checkbox
+                                                            id="dataPelatihan"
+                                                            checked={checkboxes.dataPelatihan}
+                                                            onCheckedChange={(checked) =>
+                                                                setCheckboxes(prev => ({ ...prev, dataPelatihan: !!checked }))
+                                                            }
+                                                        />
+                                                        <Label htmlFor="dataPelatihan">Data Pelatihan</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <Checkbox
+                                                            id="dataDokumen"
+                                                            checked={checkboxes.dataDokumen}
+                                                            onCheckedChange={(checked) =>
+                                                                setCheckboxes(prev => ({ ...prev, dataDokumen: !!checked }))
+                                                            }
+                                                        />
+                                                        <Label htmlFor="dataDokumen">Data Dokumen Penunjang</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <Checkbox
+                                                            id="dokumenPembayaran"
+                                                            checked={checkboxes.dokumenPembayaran}
+                                                            onCheckedChange={(checked) =>
+                                                                setCheckboxes(prev => ({ ...prev, dokumenPembayaran: !!checked }))
+                                                            }
+                                                        />
+                                                        <Label htmlFor="dokumenPembayaran">Dokumen Pembayaran</Label>
+                                                    </div>
+                                                </div>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                    <AlertDialogAction asChild>
+                                                        <Button
+                                                            type="button"
+                                                            onClick={handleApproval}
+                                                            disabled={processing || !allCheckboxesChecked}
+                                                            className="bg-green-700 hover:bg-green-800 text-white disabled:opacity-50"
+                                                        >
+                                                            {processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                                            <Check className="w-4 h-4 mr-2" />
+                                                            Setujui Kegiatan
+                                                        </Button>
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    )
                             }
                         </div>
                     </div>

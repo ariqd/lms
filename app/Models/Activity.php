@@ -30,6 +30,8 @@ class Activity extends Model
         'notes',
         'is_active',
         'status',
+        'invoice_name',
+        'payment_proof_name',
         'invoice_file',
         'payment_proof_file',
     ];

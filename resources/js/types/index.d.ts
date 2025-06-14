@@ -92,8 +92,10 @@ export interface Activity {
     notes: string;
     is_active: boolean;
     status: string;
-    invoice_file: string;
-    payment_proof_file: string;
+    invoice_name: string;
+    invoice_file: File | string | null;
+    payment_proof_name: string;
+    payment_proof_file: File | string | null;
     user_id: number;
     user: User;
     created_at?: string;
