@@ -644,9 +644,9 @@ const ActivityFormBase = ({
                                                     window.open(route('admin.activity-management.invoice.download', {
                                                         activity: activity.slug
                                                     }), '_blank');
-                                                } else if (config.role === 'lembaga' && activity?.id) {
+                                                } else if (config.role === 'lembaga' && activity?.slug) {
                                                     window.open(route('lembaga.pelatihan.invoice.download', {
-                                                        activity: activity.id
+                                                        activity: activity.slug
                                                     }), '_blank');
                                                 }
                                             }}
@@ -745,81 +745,81 @@ const ActivityFormBase = ({
 
                             {config.permissions.canUploadPaymentProof && activity?.invoice_file && (
                                 /* Lembaga can upload payment proof */
-                                <>
-                                    <div className="grid gap-2 mt-5">
-                                        <Label htmlFor="bukti_pembayaran" className='text-sm font-medium text-gray-900'>
+                                <div className="grid gap-2 mt-5">
+                                    <Label htmlFor="bukti_pembayaran" className='text-sm font-medium text-gray-900'>
+                                        Upload Bukti Pembayaran
+                                    </Label>
+                                    <div className="grid grid-cols-12 gap-2">
+                                        <Input
+                                            type="file"
+                                            accept=".pdf,.png,.jpg,.jpeg"
+                                            disabled={formLogic.processing}
+                                            className='cursor-pointer col-span-4'
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file && !isValidFileType(file)) {
+                                                    alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
+                                                    e.target.value = '';
+                                                    return;
+                                                }
+                                                if (file && file.size > 10 * 1024 * 1024) {
+                                                    alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                                                    e.target.value = '';
+                                                    return;
+                                                }
+                                                // Set payment proof file
+                                                setData('payment_proof_file', file || null);
+                                            }}
+                                        />
+                                        <Input
+                                            type="text"
+                                            placeholder="Catatan (opsional)"
+                                            disabled={formLogic.processing}
+                                            className='col-span-5'
+                                            value={data.payment_proof_notes || ''}
+                                            onChange={(e) => setData('payment_proof_notes', e.target.value)}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="default"
+                                            disabled={formLogic.processing || !data.payment_proof_file}
+                                            className='bg-blue-600 hover:bg-blue-700 col-span-3'
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                formLogic.handlePaymentProofUpload(e);
+                                            }}
+                                        >
+                                            {formLogic.processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                            <Upload className='w-4 h-4 mr-2' />
                                             Upload Bukti Pembayaran
-                                        </Label>
-                                        <div className="grid grid-cols-12 gap-2">
-                                            <Input
-                                                type="file"
-                                                accept=".pdf,.png,.jpg,.jpeg"
-                                                disabled={formLogic.processing}
-                                                className='cursor-pointer col-span-4'
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file && !isValidFileType(file)) {
-                                                        alert('Tipe file tidak didukung. Hanya PDF, PNG, JPG, dan JPEG yang diizinkan.');
-                                                        e.target.value = '';
-                                                        return;
-                                                    }
-                                                    if (file && file.size > 10 * 1024 * 1024) {
-                                                        alert('Ukuran file terlalu besar. Maksimal 10MB.');
-                                                        e.target.value = '';
-                                                        return;
-                                                    }
-                                                    // Handle payment proof upload
-                                                    if (file && formLogic.additionalHandlers?.handlePaymentProofUpload) {
-                                                        (formLogic.additionalHandlers.handlePaymentProofUpload as (file: File) => void)(file);
-                                                    }
-                                                }}
-                                            />
-                                            <Input
-                                                type="text"
-                                                placeholder="Catatan (opsional)"
-                                                disabled={formLogic.processing}
-                                                className='col-span-5'
-                                                onChange={(e) => {
-                                                    if (formLogic.additionalHandlers?.handlePaymentProofNotes) {
-                                                        (formLogic.additionalHandlers.handlePaymentProofNotes as (notes: string) => void)(e.target.value);
-                                                    }
-                                                }}
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="default"
-                                                disabled={formLogic.processing}
-                                                className='bg-blue-600 hover:bg-blue-700 col-span-3'
-                                                onClick={() => {
-                                                    if (formLogic.additionalHandlers?.submitPaymentProof) {
-                                                        (formLogic.additionalHandlers.submitPaymentProof as () => void)();
-                                                    }
-                                                }}
-                                            >
-                                                <Upload className='w-4 h-4 mr-2' />
-                                                Upload Bukti Pembayaran
-                                            </Button>
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Supports: PDF, PNG, JPG, JPEG (Max: 10MB)
-                                        </p>
+                                        </Button>
                                     </div>
-                                </>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Format: PDF, PNG, JPG, JPEG (Max: 10MB)
+                                    </p>
+                                    <InputError message={errors.payment_proof_file} />
+                                    <InputError message={errors.payment_proof_notes} />
+                                </div>
                             )}
+
+                            {
+                                config.permissions.canViewInvoice || config.permissions.canSendInvoice && (
+                                    <p className="font-medium text-gray-600">Bukti Pembayaran</p>
+                                )
+                            }
 
                             {(config.permissions.canViewInvoice || config.permissions.canSendInvoice) && activity?.payment_proof_file ? (
                                 /* Show existing payment proof */
-                                <div className="border rounded-lg p-4 bg-gray-50 mt-5">
+                                <div className="border rounded-lg p-4 bg-gray-50 mt-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
                                             <div className='space-y-1'>
-                                                <p className="font-medium text-gray-900">Bukti Pembayaran</p>
                                                 <p className="text-sm text-gray-500">
                                                     {getFileName(activity.payment_proof_file) || 'bukti-pembayaran.pdf'}
                                                 </p>
                                                 {activity.payment_proof_name && (
                                                     <div className="text-xs text-gray-500 mt-4">
-                                                        <div className="font-medium text-gray-900">Nama File:</div>
+                                                        <div className="font-medium text-gray-900">Catatan:</div>
                                                         <div className="text-gray-500">{activity.payment_proof_name}</div>
                                                     </div>
                                                 )}
@@ -836,9 +836,9 @@ const ActivityFormBase = ({
                                                     window.open(route('admin.activity-management.payment-proof.download', {
                                                         activity: activity.slug
                                                     }), '_blank');
-                                                } else if (config.role === 'lembaga' && activity?.id) {
+                                                } else if (config.role === 'lembaga' && activity?.slug) {
                                                     window.open(route('lembaga.pelatihan.payment-proof.download', {
-                                                        activity: activity.id
+                                                        activity: activity.slug
                                                     }), '_blank');
                                                 }
                                             }}

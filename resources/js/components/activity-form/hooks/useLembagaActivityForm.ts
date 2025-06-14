@@ -36,13 +36,15 @@ export const useLembagaActivityForm = (activity?: Activity): ActivityFormLogic =
             name: file.name,
             file: file.file, // This will be the file path string for existing files
         })) || [{ id: Date.now().toString(), name: '', file: null }],
+        payment_proof_file: null,
+        payment_proof_notes: '',
     } as ActivityFormData);
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (activity) {
-            router.post(route('lembaga.pelatihan.update', activity.id), {
+            router.post(route('lembaga.pelatihan.update', activity.slug), {
                 _method: 'put',
                 ...data,
             });
@@ -78,6 +80,40 @@ export const useLembagaActivityForm = (activity?: Activity): ActivityFormLogic =
         );
     };
 
+    const handlePaymentProofUpload = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!activity?.slug) {
+            console.error('Activity slug is required for payment proof upload');
+            return;
+        }
+
+        if (!data.payment_proof_file) {
+            console.error('Payment proof file is required');
+            return;
+        }
+
+        // Create form data for payment proof upload
+        const formData = new FormData();
+        formData.append('payment_proof_file', data.payment_proof_file);
+        if (data.payment_proof_notes) {
+            formData.append('payment_proof_notes', data.payment_proof_notes);
+        }
+
+        // Submit payment proof upload
+        router.post(route('lembaga.pelatihan.upload-payment-proof', activity.slug), formData, {
+            forceFormData: true,
+            onSuccess: () => {
+                // Reset payment proof form fields
+                setData('payment_proof_file', null);
+                setData('payment_proof_notes', '');
+            },
+            onError: (errors) => {
+                console.error('Payment proof upload failed:', errors);
+            },
+        });
+    };
+
     const errors = activity ? updateErrors : createErrors;
 
     return {
@@ -90,5 +126,6 @@ export const useLembagaActivityForm = (activity?: Activity): ActivityFormLogic =
         removeDocument,
         updateDocumentName,
         updateDocumentFile,
+        handlePaymentProofUpload,
     };
 };

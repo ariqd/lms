@@ -60,6 +60,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('activity-management/{activity}/send-invoice', [ActivityManagementController::class, 'sendInvoice'])
             ->name('admin.activity-management.send-invoice');
+
+        Route::get('activity-management/{activity}/invoice/download', [ActivityManagementController::class, 'downloadInvoice'])
+            ->name('admin.activity-management.invoice.download');
+
+        Route::get('activity-management/{activity}/payment-proof/download', [ActivityManagementController::class, 'downloadPaymentProof'])
+            ->name('admin.activity-management.payment-proof.download');
     });
 
     // KADER ROUTES
@@ -111,6 +117,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:lembaga')->group(function () {
         Route::resource('activities', ActivityController::class)->names('lembaga.pelatihan');
+
+        // Payment proof upload route
+        Route::post('activities/{activity}/upload-payment-proof', [ActivityController::class, 'uploadPaymentProof'])
+            ->name('lembaga.pelatihan.upload-payment-proof');
+
+        // Payment proof download route
+        Route::get('activities/{activity}/payment-proof/download', [ActivityController::class, 'downloadPaymentProof'])
+            ->name('lembaga.pelatihan.payment-proof.download');
+
+        // Invoice download route
+        Route::get('activities/{activity}/invoice/download', [ActivityController::class, 'downloadInvoice'])
+            ->name('lembaga.pelatihan.invoice.download');
     });
 });
 

@@ -24,6 +24,8 @@ export type ActivityFormData = {
     documents: DocumentItem[];
     invoice_name?: string;
     invoice_file?: File | null;
+    payment_proof_file?: File | null;
+    payment_proof_notes?: string;
 };
 
 export type ActivityFormPermissions = {
@@ -57,6 +59,7 @@ export type ActivityFormLogic = {
     removeDocument: (id: string) => void;
     updateDocumentName: (id: string, name: string) => void;
     updateDocumentFile: (id: string, file: File | null) => void;
+    handlePaymentProofUpload: (e: React.FormEvent) => void;
     additionalHandlers?: Record<string, unknown>;
 };
 

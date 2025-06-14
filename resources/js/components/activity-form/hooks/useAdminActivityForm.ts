@@ -33,6 +33,8 @@ export const useAdminActivityForm = (activity: Activity): ActivityFormLogic => {
         documents: [],
         invoice_name: '',
         invoice_file: null,
+        payment_proof_file: null,
+        payment_proof_notes: '',
     });
 
     const submit = (e: React.FormEvent) => {
@@ -80,6 +82,11 @@ export const useAdminActivityForm = (activity: Activity): ActivityFormLogic => {
         // Admin doesn't update document files
     };
 
+    const handlePaymentProofUpload = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Admin doesn't upload payment proof - this is handled by lembaga users
+    };
+
     return {
         data,
         setData,
@@ -90,6 +97,7 @@ export const useAdminActivityForm = (activity: Activity): ActivityFormLogic => {
         removeDocument,
         updateDocumentName,
         updateDocumentFile,
+        handlePaymentProofUpload,
         additionalHandlers: {
             handleApproval,
             handleSendInvoice,

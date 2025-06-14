@@ -158,4 +158,40 @@ class ActivityManagementController extends Controller
                 ->withInput();
         }
     }
+
+    /**
+     * Download invoice for the activity.
+     */
+    public function downloadInvoice($slug)
+    {
+        $activity = Activity::where('slug', $slug)->firstOrFail();
+
+        if (!$activity->invoice_file || !Storage::disk('public')->exists($activity->invoice_file)) {
+            return redirect()->route('admin.activity-management.show', $slug)
+                ->with('error', 'File invoice tidak ditemukan');
+        }
+
+        return response()->download(
+            Storage::disk('public')->path($activity->invoice_file),
+            $activity->invoice_name . '.' . pathinfo($activity->invoice_file, PATHINFO_EXTENSION)
+        );
+    }
+
+    /**
+     * Download payment proof for the activity.
+     */
+    public function downloadPaymentProof($slug)
+    {
+        $activity = Activity::where('slug', $slug)->firstOrFail();
+
+        if (!$activity->payment_proof_file || !Storage::disk('public')->exists($activity->payment_proof_file)) {
+            return redirect()->route('admin.activity-management.show', $slug)
+                ->with('error', 'File bukti pembayaran tidak ditemukan');
+        }
+
+        return response()->download(
+            Storage::disk('public')->path($activity->payment_proof_file),
+            $activity->payment_proof_name . '.' . pathinfo($activity->payment_proof_file, PATHINFO_EXTENSION)
+        );
+    }
 }

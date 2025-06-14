@@ -100,9 +100,9 @@ class ActivityController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $slug)
+    public function show(Activity $activity)
     {
-        $activity = Activity::where('slug', $slug)->with('files')->firstOrFail();
+        $activity->load('files');
 
         return Inertia::render('lembaga/activity/form', [
             'title' => 'Detail Kegiatan ' . $activity->name,
@@ -113,7 +113,7 @@ class ActivityController extends Controller
                 ],
                 [
                     'title' => 'Detail Kegiatan ' . $activity->name,
-                    'href' => route('lembaga.pelatihan.show', $slug)
+                    'href' => route('lembaga.pelatihan.show', $activity->slug)
                 ]
             ],
             'description' => 'Lihat atau edit detail kegiatan',
@@ -132,9 +132,8 @@ class ActivityController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(StoreActivityRequest $request, int $id)
+    public function update(StoreActivityRequest $request, Activity $activity)
     {
-        $activity = Activity::where('id', $id)->firstOrFail();
 
         if ($activity->user_id !== Auth::user()->id && Auth::user()->role->identity !== 'admin') {
             return redirect()->route('lembaga.pelatihan.index')->with('error', "Anda tidak memiliki akses untuk mengubah kegiatan ini");
@@ -180,5 +179,81 @@ class ActivityController extends Controller
     public function destroy(Activity $activity)
     {
         //
+    }
+
+    /**
+     * Upload payment proof for the activity.
+     */
+    public function uploadPaymentProof(Request $request, Activity $activity)
+    {
+
+        // Check if user owns this activity
+        if ($activity->user_id !== Auth::user()->id) {
+            return redirect()->route('lembaga.pelatihan.index')
+                ->with('error', 'Anda tidak memiliki akses untuk mengunggah bukti pembayaran untuk kegiatan ini');
+        }
+
+        $request->validate([
+            'payment_proof_file' => 'required|file|mimes:pdf,png,jpg,jpeg|max:10240', // 10MB max
+            'payment_proof_notes' => 'nullable|string|max:255',
+        ]);
+
+        $file = $request->file('payment_proof_file');
+        $filename = time() . '_bukti_pembayaran_' . $file->getClientOriginalName();
+        $filePath = $file->storeAs('payment-proofs', $filename, 'public');
+
+        $activity->update([
+            'payment_proof_file' => $filePath,
+            'payment_proof_name' => $request->payment_proof_notes ?: 'Bukti Pembayaran ' . $activity->name,
+        ]);
+
+        return redirect()->route('lembaga.pelatihan.show', $activity->slug)
+            ->with('success', 'Bukti pembayaran berhasil diunggah');
+    }
+
+    /**
+     * Download payment proof for the activity.
+     */
+    public function downloadPaymentProof(Activity $activity)
+    {
+
+        // Check if user owns this activity
+        if ($activity->user_id !== Auth::user()->id) {
+            return redirect()->route('lembaga.pelatihan.index')
+                ->with('error', 'Anda tidak memiliki akses untuk mengunduh bukti pembayaran untuk kegiatan ini');
+        }
+
+        if (!$activity->payment_proof_file || !Storage::disk('public')->exists($activity->payment_proof_file)) {
+            return redirect()->route('lembaga.pelatihan.show', $activity->slug)
+                ->with('error', 'File bukti pembayaran tidak ditemukan');
+        }
+
+        return response()->download(
+            Storage::disk('public')->path($activity->payment_proof_file),
+            $activity->payment_proof_name . '.' . pathinfo($activity->payment_proof_file, PATHINFO_EXTENSION)
+        );
+    }
+
+    /**
+     * Download invoice for the activity.
+     */
+    public function downloadInvoice(Activity $activity)
+    {
+
+        // Check if user owns this activity
+        if ($activity->user_id !== Auth::user()->id) {
+            return redirect()->route('lembaga.pelatihan.index')
+                ->with('error', 'Anda tidak memiliki akses untuk mengunduh invoice untuk kegiatan ini');
+        }
+
+        if (!$activity->invoice_file || !Storage::disk('public')->exists($activity->invoice_file)) {
+            return redirect()->route('lembaga.pelatihan.show', $activity->slug)
+                ->with('error', 'File invoice tidak ditemukan');
+        }
+
+        return response()->download(
+            Storage::disk('public')->path($activity->invoice_file),
+            $activity->invoice_name . '.' . pathinfo($activity->invoice_file, PATHINFO_EXTENSION)
+        );
     }
 }
