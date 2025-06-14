@@ -12,10 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Download, Plus, Trash2, Upload, ArrowLeft, LoaderCircle } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { formatCurrencyInput, parseCurrencyInput } from '@/utils/currency';
 import { formatFileSize, getFileName, isValidFileType } from '@/utils/file';
+import AlertComponent from '@/components/alert';
 
 const ActivityFormBase = ({
     activity,
@@ -35,7 +37,9 @@ const ActivityFormBase = ({
                     <Heading title={title} description={description} />
                 </div>
 
+
                 <form onSubmit={submit} className="space-y-8">
+                    <AlertComponent />
                     {/* Informasi Dasar Pelatihan */}
                     <div className="bg-white rounded-lg border p-6">
                         <div className="flex items-center gap-2 mb-4">
@@ -656,11 +660,11 @@ const ActivityFormBase = ({
                                         </Button>
                                     </div>
                                 </div>
-                            ) : config.permissions.canViewInvoice && (
+                            ) : config.permissions.canViewInvoice && config.role === 'lembaga' && (
                                 <div className="border rounded-lg p-4 bg-gray-50 mb-5">
                                     <div className="flex items-center justify-center">
                                         <p className="text-sm text-gray-500">
-                                            {config.role === 'lembaga' ? 'Admin belum mengupload Invoice' : 'Invoice belum diupload'}
+                                            Admin belum mengupload Invoice
                                         </p>
                                     </div>
                                 </div>
@@ -779,20 +783,65 @@ const ActivityFormBase = ({
                                             value={data.payment_proof_notes || ''}
                                             onChange={(e) => setData('payment_proof_notes', e.target.value)}
                                         />
-                                        <Button
-                                            type="button"
-                                            variant="default"
-                                            disabled={formLogic.processing || !data.payment_proof_file}
-                                            className='bg-blue-600 hover:bg-blue-700 col-span-3'
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                formLogic.handlePaymentProofUpload(e);
+                                        <AlertDialog
+                                            open={formLogic.additionalHandlers?.isPaymentProofDialogOpen as boolean}
+                                            onOpenChange={(open) => {
+                                                if (formLogic.additionalHandlers?.setIsPaymentProofDialogOpen) {
+                                                    (formLogic.additionalHandlers.setIsPaymentProofDialogOpen as (open: boolean) => void)(open);
+                                                }
                                             }}
                                         >
-                                            {formLogic.processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
-                                            <Upload className='w-4 h-4 mr-2' />
-                                            Upload Bukti Pembayaran
-                                        </Button>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="default"
+                                                    disabled={formLogic.processing || !data.payment_proof_file}
+                                                    className='bg-blue-600 hover:bg-blue-700 col-span-3'
+                                                >
+                                                    {formLogic.processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                                    <Upload className='w-4 h-4 mr-2' />
+                                                    Upload Bukti Pembayaran
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Konfirmasi Upload Bukti Pembayaran</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Apakah Anda yakin ingin mengirimkan bukti pembayaran ini?
+                                                        {data.payment_proof_file && (
+                                                            <>
+                                                                <br /><br />
+                                                                <strong>File:</strong> {data.payment_proof_file.name}
+                                                                <br />
+                                                                <strong>Ukuran:</strong> {formatFileSize(data.payment_proof_file.size)}
+                                                                {data.payment_proof_notes && (
+                                                                    <>
+                                                                        <br />
+                                                                        <strong>Catatan:</strong> {data.payment_proof_notes}
+                                                                    </>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel disabled={formLogic.processing}>
+                                                        Batal
+                                                    </AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        disabled={formLogic.processing}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            formLogic.handlePaymentProofUpload(e);
+                                                        }}
+                                                        className="bg-blue-600 hover:bg-blue-700"
+                                                    >
+                                                        {formLogic.processing && <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />}
+                                                        Ya, Upload Bukti Pembayaran
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">
                                         Format: PDF, PNG, JPG, JPEG (Max: 10MB)

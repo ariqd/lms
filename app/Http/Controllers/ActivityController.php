@@ -228,10 +228,7 @@ class ActivityController extends Controller
                 ->with('error', 'File bukti pembayaran tidak ditemukan');
         }
 
-        return response()->download(
-            Storage::disk('public')->path($activity->payment_proof_file),
-            $activity->payment_proof_name . '.' . pathinfo($activity->payment_proof_file, PATHINFO_EXTENSION)
-        );
+        return response()->download(Storage::disk('public')->path($activity->payment_proof_file));
     }
 
     /**

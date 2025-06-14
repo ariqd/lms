@@ -1,9 +1,11 @@
 import { Activity, DocumentItem } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { ActivityFormData, ActivityFormLogic } from '../types/ActivityFormTypes';
 
 export const useLembagaActivityForm = (activity?: Activity): ActivityFormLogic => {
     const { errors: updateErrors } = usePage().props;
+    const [isPaymentProofDialogOpen, setIsPaymentProofDialogOpen] = useState(false);
 
     const {
         data,
@@ -107,6 +109,12 @@ export const useLembagaActivityForm = (activity?: Activity): ActivityFormLogic =
                 // Reset payment proof form fields
                 setData('payment_proof_file', null);
                 setData('payment_proof_notes', '');
+
+                // Close the confirmation dialog
+                setIsPaymentProofDialogOpen(false);
+
+                // The success message will be displayed via Laravel's flash session
+                // which will appear on the redirected page
             },
             onError: (errors) => {
                 console.error('Payment proof upload failed:', errors);
@@ -127,5 +135,9 @@ export const useLembagaActivityForm = (activity?: Activity): ActivityFormLogic =
         updateDocumentName,
         updateDocumentFile,
         handlePaymentProofUpload,
+        additionalHandlers: {
+            isPaymentProofDialogOpen,
+            setIsPaymentProofDialogOpen,
+        },
     };
 };
